@@ -42,14 +42,25 @@ chat memory. Two rituals make this work — follow them every time.
 - Mark a **Nuance/revisit** item resolved once it has been reinforced *and* feels comfortable.
 - Every few rungs, do a quick sweep for anything still shaky that never resurfaced naturally.
 
-**End-of-session ritual** (run before stopping):
-1. Make sure work is committed with a clear message.
-2. Update `PROGRESS.md`: the status line + a new session-log entry (what we did, commit,
-   next step, and **nuance notes** — what was shaky/should be revisited, decisions + why).
-3. Tell the user what the next session should start with.
+**End-of-rung ritual** (when a rung is finished):
+1. Make sure the work is committed with a clear message (and pushed, from Rung 1.5 onward).
+2. Update `PROGRESS.md`: the status line + a new journal entry (what we did, commit, next
+   step, and **nuance notes** — what was shaky/should be revisited, decisions + why).
+3. Apply the **clearing rule** above (remove taught deferred concepts, mark resolved nuances).
+4. Update `PLAN.md` **only if the plan itself changed** (rung added/reordered/rescoped).
+5. Update `README.md` **only on a milestone-level change** (e.g. DB now integrated) — not routine.
 
-`PROGRESS.md` is the journal (append-only, mutable); `PLAN.md` is the stable roadmap. Keep
-them separate.
+**End-of-session ritual** (if we stop *mid-rung*):
+- Update `PROGRESS.md` status line to the in-progress state + what to resume with next time.
+
+**IMPORTANT — never assume a rung/session is ending.** Run these end rituals only when the
+user signals they want to wrap up or checkpoint. Do not start closing down on my own.
+
+### File responsibilities (one job each — avoid duplicating status)
+- `PROGRESS.md` — *where we are* (status + journal). **Updated every rung.** Source of truth.
+- `PLAN.md` — *stable roadmap* (what each rung is). Updated **only when the plan changes.**
+- `README.md` — *what the project is* (high-level). Updated **rarely**, on milestones only.
+- `CLAUDE.md` — *how we work* (these rules). Updated when the working agreement changes.
 
 ## Roadmap
 See **PLAN.md** for the full rung-by-rung roadmap of what we're building.

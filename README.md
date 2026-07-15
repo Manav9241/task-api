@@ -12,9 +12,8 @@ well-understood step at a time, rather than shipping a product.
 - **MongoDB** + **Mongoose** — database & modelling (added partway through)
 
 ## Status
-🚧 In progress — built rung by rung. See [PLAN.md](PLAN.md) for the full roadmap.
-
-Current stage: **Rung 0 — project & git setup** (pre-code).
+🚧 In progress — a learning project, built rung by rung.
+See [PLAN.md](PLAN.md) for the roadmap and [PROGRESS.md](PROGRESS.md) for exactly where we are.
 
 ## What the API will do
 Manage a list of tasks over HTTP:

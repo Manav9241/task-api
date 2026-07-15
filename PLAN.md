@@ -14,19 +14,18 @@ We climb one small, boring rung at a time and only move on when the current rung
 Pre-flight checks and version control, before any application code.
 
 **Pre-flight checklist**
-- [ ] Node.js + npm installed (`node --version`, `npm --version`) → if missing, install Node LTS
-- [ ] Project folder → `task-api/` (done)
-- [ ] Editor + terminal ready (VS Code assumed)
-- [ ] Docs in project → `README.md`, `PLAN.md`, `CLAUDE.md` (done)
+- Node.js + npm installed (`node --version`, `npm --version`) → if missing, install Node LTS
+- Editor + terminal ready (VS Code assumed)
+- Docs in project → `README.md`, `PLAN.md`, `CLAUDE.md`, `PROGRESS.md`
 
 **Git setup**
-- [ ] Git installed + identity set (`git --version`; `git config --global user.name` and
-      `user.email` must return values — if blank, set them, or the first commit will fail)
-- [ ] `git init` — turn the folder into a git repository
-- [ ] Create a **`.gitignore`** BEFORE installing anything (must ignore `node_modules/`, and
-      later `.env`) so we never commit dependencies or secrets
-- [ ] First commit — the docs + `.gitignore` (a clean starting point)
-- [ ] Habit: **commit at the end of each rung** to build a clear progress history
+- Git installed + identity set (`git --version`; `git config --global user.name` and
+  `user.email` must return values — if blank, set them, or the first commit will fail)
+- `git init` — turn the folder into a git repository
+- Create a **`.gitignore`** BEFORE installing anything (must ignore `node_modules/`, and
+  later `.env`) so we never commit dependencies or secrets
+- First commit — the docs + `.gitignore` (a clean starting point)
+- Habit: **commit at the end of each rung** to build a clear progress history
 
 ### Rung 1 — A server that responds
 - `npm init` inside the existing `task-api/` folder (creates `package.json`)
