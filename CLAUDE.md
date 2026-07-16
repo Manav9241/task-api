@@ -26,7 +26,17 @@ every session on this project.
    responding to any message, silently check whether I need to re-read or update any system
    file — and if so, just do it. Don't ask permission, don't turn the system into a topic,
    don't make the user hunt for gaps. The user focuses only on backend, rung by rung.
-8. **Handle the user's comparisons by confirming the core first.** When the user says "X is
+8. **Never leave a forward-looking note in chat — record it immediately.** The moment I say
+   "we'll cover this later", "I'll flag it if…", "you'll hit this in Rung N", or spot a
+   concept worth covering later, write it down *in that same turn*. Chat memory does not
+   survive the session. Where it goes:
+   - **Due at a rung in this project, or on a trigger** → `PROGRESS.md` → *Deferred concepts*
+     (state when it's due). NOT the journal — the journal is history and scrolls away.
+   - **Out of scope for this project** (e.g. auth, other topics) → `PLAN.md` →
+     *Later / optional*, as a parking lot for a future project.
+   Then **consume** them: at rung start, cover anything due; **before closing a rung, verify
+   nothing owed to it is still unpaid**; remove items once covered.
+9. **Handle the user's comparisons by confirming the core first.** When the user says "X is
    like Y", first judge and state whether the *high-level* idea is right. If the core is
    correct, **affirm it plainly, then** add technical nuance as refinement — never lead with
    the differences in a way that makes a fundamentally-right comparison feel wrong. Reserve
@@ -58,6 +68,8 @@ chat memory. Two rituals make this work — follow them every time.
 - Every few rungs, do a quick sweep for anything still shaky that never resurfaced naturally.
 
 **End-of-rung ritual** (when a rung is finished):
+0. **Check nothing owed to this rung is unpaid** — scan *Deferred concepts* for items due
+   this rung and cover them *before* closing it. Don't let a rung end with debt on it.
 1. Make sure the work is committed with a clear message (and pushed, from Rung 1.5 onward).
 2. Update `PROGRESS.md`: move the status line to the new state. Add a journal entry **only
    for what git/PLAN/code don't capture** — decisions (+ why), shaky spots, process/pace
