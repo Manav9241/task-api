@@ -63,6 +63,13 @@ We default to a **fresh chat session per coherent chunk of learning** (≈ one r
 rungs, split big ones). Boundaries are kept cheap by writing state to files, not relying on
 chat memory. Two rituals make this work — follow them every time.
 
+**Branch workflow (from Rung 2 onward).** Not because a solo project needs it — `main`-only
+would be fine — but because branch → PR → merge is interview-relevant muscle memory.
+- **At rung start:** `git checkout -b rung-<N>-<slug>` (e.g. `rung-2-read-tasks`).
+- **At rung end:** commit → `git push -u origin <branch>` → **open a real PR on GitHub** →
+  merge it there → `git checkout main && git pull`.
+- The PR step is the point; merging locally would skip the part that mirrors real work.
+
 **Start-of-session ritual** (run before doing anything):
 1. Read `PLAN.md`, `PROGRESS.md`, recent `git log`, and the current code.
 2. Give the user a 2-line recap: where we are + what this session's chunk is.
@@ -79,7 +86,8 @@ chat memory. Two rituals make this work — follow them every time.
 **End-of-rung ritual** (when a rung is finished):
 0. **Check nothing owed to this rung is unpaid** — scan *Deferred concepts* for items due
    this rung and cover them *before* closing it. Don't let a rung end with debt on it.
-1. Make sure the work is committed with a clear message (and pushed, from Rung 1.5 onward).
+1. Commit with a clear message, then **push the branch and merge via a PR on GitHub**
+   (see *Branch workflow* above), then return to `main` and pull.
 2. Update `PROGRESS.md`: move the status line to the new state. Add a journal entry **only
    for what git/PLAN/code don't capture** — decisions (+ why), shaky spots, process/pace
    notes. No restating what we did, no commit hashes. If nothing notable, the status line
