@@ -5,8 +5,8 @@
 > session, update it at the end.
 
 ## Status
-✅ Rung 1 done — server responds at `http://localhost:3000`.
-▶ **Next: Rung 1.5 — Connect to GitHub** (private repo, auth, push).
+✅ Rung 1.5 done — pushed to a private GitHub repo over SSH. **Push at the end of each rung now.**
+▶ **Next: Rung 2 — Read tasks (in-memory)**: hardcoded array, `GET /tasks`, `GET /tasks/:id`.
 
 ## Deferred concepts (owed later)
 > Standing debt: anything **promised or spotted for later** — concepts to teach, traps to
@@ -34,6 +34,12 @@
 - **Revisit / process:**
 
 ---
+
+### 2026-07-16 — Rung 1.5
+- **Decisions:** SSH over PAT — tokens expire and are a live secret to store; SSH keys don't
+  expire and nothing gets pasted after setup. Key generated **without a passphrase** —
+  accepted tradeoff for a private learning repo (note: the key is machine-wide, so if it's
+  ever reused for work repos, revisit this).
 
 ### 2026-07-16 — Rung 1
 - **Decisions:** `commonjs` over ESM — most Node/Express tutorials, existing code, and
