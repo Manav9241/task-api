@@ -5,8 +5,9 @@
 > session, update it at the end.
 
 ## Status
-✅ Rung 1.5 done — pushed to a private GitHub repo over SSH. **Push at the end of each rung now.**
-▶ **Next: Rung 2 — Read tasks (in-memory)**: hardcoded array, `GET /tasks`, `GET /tasks/:id`.
+✅ Rung 2 done — `GET /tasks` and `GET /tasks/:id` read from an in-memory array (PR #1 merged).
+▶ **Next: Rung 3 — Create tasks (in-memory)**: `express.json()`, `POST /tasks`, and a tool
+to test non-GET requests (Thunder Client / curl — decided at Rung 3, per PLAN).
 
 ## Deferred concepts (owed later)
 > Standing debt: anything **promised or spotted for later** — concepts to teach, traps to
@@ -14,10 +15,6 @@
 > Keep visible here until paid, then remove. (Different from a session entry's
 > *Nuance/revisit*, which is history and scrolls away.)
 
-- **Route matching is top-to-bottom, first match wins** → due **Rung 2**. Demonstrate the
-  trap explicitly: `/tasks/:id` defined before `/tasks/new` swallows `"new"` as an id. Rule:
-  specific routes before generic ones. (Taught in passing at Rung 1 — must be made concrete
-  when the routes actually exist.)
 - **Express 5 vs Express 4 differences** → due **on trigger**: we're on Express 5 while most
   tutorials are v4. Near-identical for basic routing, but **flag it explicitly if a real
   difference ever bites** (I promised this at Rung 1).
@@ -34,6 +31,11 @@
 - **Revisit / process:**
 
 ---
+
+### 2026-07-16 — Rung 2
+- **Decisions:** pulled **404 + `res.status()` forward from Rung 4** — a `:id` route that
+  returns nothing for a bad id is just broken. Rung 4 should formalise status codes across
+  all routes rather than introducing 404 from scratch.
 
 ### 2026-07-16 — Rung 1.5
 - **Decisions:** SSH over PAT — tokens expire and are a live secret to store; SSH keys don't
