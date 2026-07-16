@@ -29,14 +29,30 @@ every session on this project.
    responding to any message, silently check whether I need to re-read or update any system
    file — and if so, just do it. Don't ask permission, don't turn the system into a topic,
    don't make the user hunt for gaps. The user focuses only on backend, rung by rung.
-8. **Never leave a forward-looking note in chat — record it immediately.** The moment I say
-   "we'll cover this later", "I'll flag it if…", "you'll hit this in Rung N", or spot a
-   concept worth covering later, write it down *in that same turn*. Chat memory does not
-   survive the session. Where it goes:
-   - **Due at a rung in this project, or on a trigger** → `PROGRESS.md` → *Deferred concepts*
-     (state when it's due). NOT the journal — the journal is history and scrolls away.
-   - **Out of scope for this project** (e.g. auth, other topics) → `PLAN.md` →
-     *Later / optional*, as a parking lot for a future project.
+
+   **Before AND after changing any system file, check the whole system for breakage.**
+   Read what's actually there, and verify: no rule now contradicts another; nothing was left
+   dangling or deleted that other parts rely on; no gaps or duplicated facts introduced.
+   **Following one rule never licenses breaking another** — e.g. moving an action item to
+   *Deferred* must not delete the decision rationale the journal is supposed to keep. A change
+   isn't done until the system is verified consistent.
+8. **Never leave a forward-looking note in chat — record it immediately, in the right place.**
+   The moment I say "we'll cover this later", "I'll flag it if…", "you'll hit this in Rung N",
+   or pull a concept forward/push it back, write it down *in that same turn*. Chat memory does
+   not survive the session.
+
+   **The test — apply it every time, no judgement calls:**
+   > **Does this require someone to DO something later?**
+   > - **Yes** → `PROGRESS.md` → *Deferred concepts*, **with a due rung or trigger**.
+   > - **No** (just "why we did this", needs no action) → journal entry.
+   > - **Out of scope for this project** (e.g. auth) → `PLAN.md` → *Later / optional*.
+
+   **Why this matters:** the journal is history — it is **NOT reliably read**, and nothing in
+   it drives action. *Deferred concepts* is the only list consumed deterministically, because
+   every item states when it's due. **An action item in the journal is a lost action item.**
+   (This has already been misfiled twice — route ordering, and 404/status codes. Apply the
+   test literally rather than trusting instinct.)
+
    Then **consume** them: at rung start, cover anything due; **before closing a rung, verify
    nothing owed to it is still unpaid**; remove items once covered.
 9. **Handle the user's comparisons by confirming the core first.** When the user says "X is
@@ -73,15 +89,16 @@ would be fine — but because branch → PR → merge is interview-relevant musc
 **Start-of-session ritual** (run before doing anything):
 1. Read `PLAN.md`, `PROGRESS.md`, recent `git log`, and the current code.
 2. Give the user a 2-line recap: where we are + what this session's chunk is.
-3. **Consume the ledger (don't just read it):**
-   - Any **Deferred concept** due this rung → fold it into this rung's refresher.
-   - Any **Nuance/revisit** note the current rung touches → reinforce it in passing.
+3. **Consume the ledger (don't just read it):** any **Deferred concept** due this rung (or
+   whose trigger has fired) → fold it into this rung's refresher/work. *Deferred concepts* is
+   the action list; the session log is reference and drives nothing.
 4. Then follow the normal rung flow (brief → optional concept revision → guide).
 
 **Clearing rule** (keeps the ledger honest — apply as part of the end ritual):
-- Remove a **Deferred concept** once it has been taught.
-- Mark a **Nuance/revisit** item resolved once it has been reinforced *and* feels comfortable.
-- Every few rungs, do a quick sweep for anything still shaky that never resurfaced naturally.
+- Remove a **Deferred concept** once it has been paid (taught/demonstrated/resolved).
+- If a concept stays shaky, that's an **action** → put it in *Deferred concepts* with a due
+  rung or trigger. Never leave "reinforce this later" in the session log.
+- Every few rungs, sweep *Deferred concepts* for anything whose trigger quietly passed.
 
 **End-of-rung ritual** (when a rung is finished):
 0. **Check nothing owed to this rung is unpaid** — scan *Deferred concepts* for items due
@@ -108,7 +125,9 @@ would be fine — but because branch → PR → merge is interview-relevant musc
   files current ≠ ending the session.
 
 ### File responsibilities (one job each — avoid duplicating status)
-- `PROGRESS.md` — *where we are* (status + journal). **Updated every rung.** Source of truth.
+- `PROGRESS.md` — *where we are*: **Status** (read first) + **Deferred concepts** (the action
+  list, consumed every rung) + **Session log** (history/reference, drives nothing).
+  **Updated every rung.** Source of truth for project state.
 - `PLAN.md` — *stable roadmap* (what each rung is). Updated **only when the plan changes.**
 - `README.md` — *what the project is* (high-level). Updated **rarely**, on milestones only.
 - `CLAUDE.md` — *how we work* (these rules). Updated when the working agreement changes.
