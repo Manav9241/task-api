@@ -5,31 +5,29 @@
 > session, update it at the end.
 
 ## Status
-▶ **Next:** Rung 0 — Project & git setup (in progress: git refresher done, tool-check next)
-🔖 **Last commit:** _(none yet)_
-🗓️ **Last worked:** _(not started)_
+▶ **Rung 1 — A server that responds.** Concepts done (Node, npm/`package.json`, Express,
+localhost/ports). Next: `npm init` → install Express → write `index.js` → run.
 
 ## Deferred concepts (owed in a later rung)
 > Standing debt: concepts **not taught yet, postponed on purpose** to a named rung. Keep visible
 > here until covered, then remove. (Different from a session entry's *Nuance/revisit*, which is
 > for concepts that *were* taught but stayed shaky.)
-- **What Node.js is / what npm & `package.json` are** → deferred to **Rung 1** (in Rung 0 we
-  only check they're installed; we don't use them until Rung 1). Cover in Rung 1's refresher.
+
+_None currently._
 
 ---
 
 ## Session log
-_Newest entries at the top. Each entry: what we did · commit · next step · nuance notes._
+> Log **only what git/PLAN/code don't already capture** — decisions (+ why), shaky spots,
+> process/pace notes. No restating what we did, no commit hashes (`git log` has those). If a
+> rung had nothing notable, skip the entry — the status line above is enough. Newest on top.
 
-### (template — copy for each session)
-- **Date:**
-- **Chunk:** Rung _N_ — _title_
-- **Did:**
-- **Commit:**
-- **Next step:**
-- **Nuance / revisit:** _(concepts that were shaky and should be spiraled back to; decisions
-  made and why; pace observations — the stuff that isn't obvious from the code or git log)_
+### (template) YYYY-MM-DD — Rung N
+- **Decisions:**
+- **Revisit / process:**
 
 ---
 
-_No sessions logged yet — Rung 0 hasn't started._
+### 2026-07-16 — Rung 0
+- **Decisions:** learning files tracked in git (not ignored); GitHub → Rung 1.5 (private repo).
+- **Process:** don't rush ahead uninvited; trust "done"/"working" without over-verifying.
