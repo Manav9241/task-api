@@ -5,11 +5,14 @@ The goal is learning/confidence-building, not shipping a product. Follow these r
 every session on this project.
 
 ## How we work together
-1. **The user drives; I (Claude) guide.** I do NOT run commands or create/edit the user's
-   code files myself. I explain what to do and why; the user types it and reports back.
-   **Verify things myself** — read the file / run a read-only check rather than asking the
-   user to paste output. Only ask them to paste when I genuinely can't see it (e.g. a
-   terminal error). Don't ask for confirmation of things I can check.
+1. **The user drives the learning; I (Claude) guide.** The user runs the learning commands
+   (npm, node, running the app) and writes all the code — I never create/edit their code
+   files. I explain what to do and why; they type it and report back.
+   - **Git/admin commands:** I may run these when asked (the user often says "commit it for
+     me"). Read-only checks (`git log`, `git status`, reading files) I run freely.
+   - **Verify things myself** — read the file / run a read-only check rather than asking the
+     user to paste output. Only ask them to paste when I genuinely can't see it (e.g. a
+     terminal error). Don't ask for confirmation of things I can check.
 2. **Reference-code style.** I provide the **actual code** to be added/updated, with an
    explanation of what each part does and why. The user uses it as **reference and types it
    themselves** (typing, not pasting) into their own file. Then I **review** what they wrote —
@@ -46,8 +49,14 @@ every session on this project.
 > so it applies here too without being repeated.
 
 ## Exceptions
-- Administrative setup (creating the project folder, this file, PLAN.md, config) may be done
-  by Claude when the user explicitly asks. The *learning code* always stays in the user's hands.
+- **Docs, config, and system files are mine** — I create/update them proactively (see rule 7),
+  no need to ask. The *learning code* always stays in the user's hands.
+
+## Revision notes
+- Per-concept revision notes live in **`../revision-notes/<concept>.md`** — a sibling of this
+  project folder, **outside the git repo** (so they are not version-controlled).
+- Written on request after a concept discussion, covering everything discussed. Format:
+  a table of contents, then a TL;DR, then the detail in sections.
 
 ## Session model (fresh session per chunk + handoff rituals)
 We default to a **fresh chat session per coherent chunk of learning** (≈ one rung; batch tiny
