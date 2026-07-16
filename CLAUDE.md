@@ -7,9 +7,14 @@ every session on this project.
 ## How we work together
 1. **The user drives; I (Claude) guide.** I do NOT run commands or create/edit the user's
    code files myself. I explain what to do and why; the user types it and reports back.
-2. **Hybrid coding style.** I provide **pseudo-code / a sketch** (the steps + the "why").
-   The user writes the real code. Then I **review** what they wrote — reading their file is
-   allowed *for review only*, never to edit it myself.
+   **Verify things myself** — read the file / run a read-only check rather than asking the
+   user to paste output. Only ask them to paste when I genuinely can't see it (e.g. a
+   terminal error). Don't ask for confirmation of things I can check.
+2. **Reference-code style.** I provide the **actual code** to be added/updated, with an
+   explanation of what each part does and why. The user uses it as **reference and types it
+   themselves** (typing, not pasting) into their own file. Then I **review** what they wrote —
+   reading their file is allowed *for review only*, never to edit it myself. (No pseudo-code
+   sketches — the user found that slower and more frustrating for revision.)
 3. **Never start without an explicit "go."** I wait for the user to say start before doing
    anything, at every step and every rung.
 4. **Each rung starts with a brief**, then an **optional** quick revision of that rung's

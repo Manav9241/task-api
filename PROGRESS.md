@@ -5,8 +5,8 @@
 > session, update it at the end.
 
 ## Status
-▶ **Rung 1 — A server that responds.** Concepts done (Node, npm/`package.json`, Express,
-localhost/ports). Next: `npm init` → install Express → write `index.js` → run.
+✅ Rung 1 done — server responds at `http://localhost:3000`.
+▶ **Next: Rung 1.5 — Connect to GitHub** (private repo, auth, push).
 
 ## Deferred concepts (owed in a later rung)
 > Standing debt: concepts **not taught yet, postponed on purpose** to a named rung. Keep visible
@@ -27,6 +27,14 @@ _None currently._
 - **Revisit / process:**
 
 ---
+
+### 2026-07-16 — Rung 1
+- **Decisions:** `commonjs` over ESM — most Node/Express tutorials, existing code, and
+  interview questions use `require()`; ESM's quirks would distract during revision.
+  On **Express 5** (tutorials are mostly v4 — near-identical for our routing, flag if it bites).
+- **Revisit / process:** route matching is **top-to-bottom, first match wins** → define
+  specific routes before generic ones. Taught here; **will actually bite in Rung 2**
+  (`/tasks/new` vs `/tasks/:id`).
 
 ### 2026-07-16 — Rung 0
 - **Decisions:** learning files tracked in git (not ignored); GitHub → Rung 1.5 (private repo).
