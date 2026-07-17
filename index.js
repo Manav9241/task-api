@@ -3,23 +3,15 @@ const express = require("express");
 const app = express();
 const PORT = 3000;
 
+app.use(express.json());
+
 const tasks = [
-    {
-        id: 1,
-        title: "Learn Node.js",
-        completed: false
-    },
-    {
-        id: 2,
-        title: "Learn Express.js",
-        completed: false
-    },
-    {
-        id: 3,
-        title: "Build the Task API",
-        completed: true
-    },
+    {id: 1, title: "Learn Node.js", completed: false},
+    {id: 2, title: "Learn Express.js", completed: false},
+    {id: 3, title: "Build the Task API", completed: true}
 ];
+
+let nextId = tasks.length + 1;
 
 app.get("/", (req, res) => {
     res.send("Server is running");
@@ -37,6 +29,16 @@ app.get("/tasks/:id", (req, res) => {
     }
     
     res.json(task);
+});
+
+app.post("/tasks", (req, res) => {
+    const newTask =  {
+        id: nextId++,
+        title: req.body.title,
+        completed: req.body.completed ?? false
+    };
+    tasks.push(newTask);
+    res.status(201).json(newTask);
 });
 
 app.listen(PORT, () => {
