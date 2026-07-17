@@ -81,7 +81,10 @@ chat memory. Two rituals make this work — follow them every time.
 
 **Branch workflow (from Rung 2 onward).** Not because a solo project needs it — `main`-only
 would be fine — but because branch → PR → merge is interview-relevant muscle memory.
-- **At rung start:** `git checkout -b rung-<N>-<slug>` (e.g. `rung-2-read-tasks`).
+- **At rung start:** `git checkout -b rung-<N>_<slug>` — note the **underscore** after the
+  number (e.g. `rung-2_read-tasks`, `rung-3_create-tasks`). This is the user's actual
+  convention; give commands that match it, or the later `git push origin <branch>` fails with
+  `src refspec ... does not match any`.
 - **At rung end:** commit → `git push -u origin <branch>` → **open a real PR on GitHub** →
   merge it there → `git checkout main && git pull`.
 - The PR step is the point; merging locally would skip the part that mirrors real work.

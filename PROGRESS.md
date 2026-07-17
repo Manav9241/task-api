@@ -8,9 +8,9 @@
 >   and nothing in it drives action.** Never put an action item here (see CLAUDE.md rule 8).
 
 ## Status
-✅ Rung 2 done — `GET /tasks` and `GET /tasks/:id` read from an in-memory array (PR #1 merged).
-▶ **Next: Rung 3 — Create tasks (in-memory)**: `express.json()`, `POST /tasks`, and a tool
-to test non-GET requests (Thunder Client / curl — decided at Rung 3, per PLAN).
+✅ Rung 3 done — `POST /tasks` creates tasks via `express.json()`; nodemon + `npm run dev` added.
+▶ **Next: Rung 4 — Full CRUD (in-memory)**: `PUT`/`PATCH /tasks/:id`, `DELETE /tasks/:id`,
+and **formalise status codes** (see Deferred — 404 and 201 already exist, build on them).
 
 ## Deferred concepts (owed later)
 > **The action list.** Anything **promised or spotted for later** — concepts to teach, traps
@@ -40,6 +40,15 @@ to test non-GET requests (Thunder Client / curl — decided at Rung 3, per PLAN)
 - **Process / context:**
 
 ---
+
+### 2026-07-16 — Rung 3
+- **Decisions:** `id` comes from a standalone `nextId` counter, not `tasks.length + 1` — the
+  latter reuses ids after a DELETE (which Rung 4 adds) and collides. Moot at Rung 5 (Mongo
+  generates ids).
+- **Process / context:** `core.autocrlf` set to **false** for this repo — it was `true` (the
+  Git-for-Windows default), which spammed an "LF will be replaced by CRLF" warning on every
+  commit. This is machine-local git config, **not** in any tracked file: a fresh clone
+  elsewhere will show the warnings again until it's set there too.
 
 ### 2026-07-16 — Rung 2
 - **Decisions:** introduced **404 + `res.status()` early** (nominally a Rung 4 topic) — a
