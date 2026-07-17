@@ -18,10 +18,11 @@ to test non-GET requests (Thunder Client / curl — decided at Rung 3, per PLAN)
 > trigger). Keep visible here until paid, then remove.
 > **The test:** if it requires someone to DO something later, it belongs here — not the log.
 
-- **Status codes: 404 already introduced at Rung 2** → due **Rung 4**. `res.status(404)` and
-  the load-bearing `return` were taught early (a `:id` route returning nothing for a bad id is
-  broken). Rung 4 must **formalise status codes across all routes (200/201/404)** and build on
-  this — do NOT re-teach 404 from scratch.
+- **Status codes: 404 (Rung 2) and 201 (Rung 3) already introduced** → due **Rung 4**.
+  `res.status(404)` + the load-bearing `return` came at Rung 2 (a `:id` route returning
+  nothing for a bad id is broken); `res.status(201)` came at Rung 3 (correct REST for a
+  create). Rung 4 must **formalise status codes across all routes** and build on these —
+  do NOT re-teach 404/201 from scratch.
 - **Express 5 vs Express 4 differences** → due **on trigger**: we're on Express 5 while most
   tutorials are v4. Near-identical for basic routing, but **flag it explicitly if a real
   difference ever bites** (I promised this at Rung 1).

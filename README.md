@@ -29,19 +29,26 @@ Manage a list of tasks over HTTP:
 *(Endpoints are added gradually as the project progresses.)*
 
 ## Getting started
-> Full setup instructions will be filled in as the project is built.
 
 ```bash
-# install dependencies (once package.json exists)
+# install dependencies
 npm install
 
-# run the server
-node index.js
+# run in development (auto-restarts on file changes)
+npm run dev
+
+# or run it plainly
+npm start
 ```
 
 Then open http://localhost:3000 in your browser.
 
+Non-GET requests (POST/PUT/DELETE) can't be sent from the browser's address bar — use
+[Thunder Client](https://marketplace.visualstudio.com/items?itemName=rangav.vscode-thunder-client)
+(VS Code extension) or `curl`.
+
 ## Project files
 - [`README.md`](README.md) — this file: what the project is and how to run it
 - [`PLAN.md`](PLAN.md) — the rung-by-rung build roadmap
+- [`PROGRESS.md`](PROGRESS.md) — where we are, plus what's owed later
 - [`CLAUDE.md`](CLAUDE.md) — collaboration rules for working with Claude on this project

@@ -77,7 +77,9 @@ Added once local git (`add`/`commit`) feels comfortable. Local-only until here.
 ## Tech choices (minimal on purpose)
 - Node.js + Express; Mongoose from Rung 5
 - No TypeScript, no extra frameworks
-- Testing: browser for GETs, then Thunder Client / curl for POST/PUT/DELETE
+- **nodemon** (devDependency, added Rung 3) — auto-restarts on file change; `npm run dev`
+- Testing: browser for GETs; **Thunder Client** for POST/PUT/DELETE (chosen at Rung 3 over
+  curl — curl's flags become a second thing to debug while learning)
 
 ## Verification
 - **Rungs 1–4:** run the server, hit the endpoint, confirm expected JSON / status code.
