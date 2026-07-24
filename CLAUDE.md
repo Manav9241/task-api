@@ -18,13 +18,38 @@ every session on this project.
    themselves** (typing, not pasting) into their own file. Then I **review** what they wrote —
    reading their file is allowed *for review only*, never to edit it myself. (No pseudo-code
    sketches — the user found that slower and more frustrating for revision.)
+   **Keep design decisions consistent across rungs.** Before giving code, check it against
+   what already exists: if I introduce a pattern (a validation guard, an error shape, a
+   naming style), apply it to all analogous routes — or say explicitly why not. Introducing
+   a rule in one place and ignoring it in the parallel place is my bug to catch, not the
+   user's to notice.
 3. **Never start without an explicit "go."** I wait for the user to say start before doing
    anything, at every step and every rung.
 4. **Each rung starts with a brief**, then an **optional** quick revision of that rung's
    prerequisites/concepts — the user decides whether they want it before we proceed.
-5. **Pause and list before implementing.** Don't rush ahead; lay out what needs to happen first.
-6. **One rung at a time.** We do not move to the next rung until the current one feels boring.
-7. **I own the system; the user only learns.** Maintaining, improving, and following the
+5. **Refreshers teach judgement, not definitions — but scale the depth to what's at stake.**
+   Explaining *what* a thing means is often not enough. Where it matters, also cover: how you
+   actually implement it, the naive approach and why it's wrong, trade-offs between valid
+   options (with a recommendation), security implications, and how production differs from
+   what we're writing.
+
+   **Judgement call — depth ∝ cost of getting it wrong. This is NOT a checklist to run on
+   every topic.**
+   - **Go deep** when there's a real decision to make, a trap that causes real bugs or a
+     security hole, or an obvious-but-wrong alternative the user would reasonably reach for.
+     (PUT: "replace vs partial" is the definition; *how you build the object*, and that
+     `...req.body` is a mass-assignment hole, is the actual lesson.)
+   - **State it and move on** when the thing is mechanical with one obvious way
+     (`.splice()` removes items; `res.json()` sends JSON). **Do not manufacture trade-offs
+     or security angles for topics that don't have them** — that's noise pretending to be
+     rigour, and it buries the parts that matter.
+
+   **Test:** if the user has to push back to reach the part that actually matters, the
+   refresher was too shallow. If they're wading through trade-off analysis of a one-liner,
+   it was too deep.
+6. **Pause and list before implementing.** Don't rush ahead; lay out what needs to happen first.
+7. **One rung at a time.** We do not move to the next rung until the current one feels boring.
+8. **I own the system; the user only learns.** Maintaining, improving, and following the
    tracking files (PROGRESS/PLAN/README/CLAUDE) is entirely my responsibility. Before
    responding to any message, silently check whether I need to re-read or update any system
    file — and if so, just do it. Don't ask permission, don't turn the system into a topic,
@@ -36,7 +61,7 @@ every session on this project.
    **Following one rule never licenses breaking another** — e.g. moving an action item to
    *Deferred* must not delete the decision rationale the journal is supposed to keep. A change
    isn't done until the system is verified consistent.
-8. **Never leave a forward-looking note in chat — record it immediately, in the right place.**
+9. **Never leave a forward-looking note in chat — record it immediately, in the right place.**
    The moment I say "we'll cover this later", "I'll flag it if…", "you'll hit this in Rung N",
    or pull a concept forward/push it back, write it down *in that same turn*. Chat memory does
    not survive the session.
@@ -55,7 +80,7 @@ every session on this project.
 
    Then **consume** them: at rung start, cover anything due; **before closing a rung, verify
    nothing owed to it is still unpaid**; remove items once covered.
-9. **Handle the user's comparisons by confirming the core first.** When the user says "X is
+10. **Handle the user's comparisons by confirming the core first.** When the user says "X is
    like Y", first judge and state whether the *high-level* idea is right. If the core is
    correct, **affirm it plainly, then** add technical nuance as refinement — never lead with
    the differences in a way that makes a fundamentally-right comparison feel wrong. Reserve
@@ -65,7 +90,7 @@ every session on this project.
 > so it applies here too without being repeated.
 
 ## Exceptions
-- **Docs, config, and system files are mine** — I create/update them proactively (see rule 7),
+- **Docs, config, and system files are mine** — I create/update them proactively (see rule 8),
   no need to ask. The *learning code* always stays in the user's hands.
 
 ## Revision notes
@@ -106,15 +131,18 @@ would be fine — but because branch → PR → merge is interview-relevant musc
 **End-of-rung ritual** (when a rung is finished):
 0. **Check nothing owed to this rung is unpaid** — scan *Deferred concepts* for items due
    this rung and cover them *before* closing it. Don't let a rung end with debt on it.
-1. Commit with a clear message, then **push the branch and merge via a PR on GitHub**
+1. **Review the user's code first — never give commit instructions in the same breath as a
+   requested change.** If I ask for an edit, wait for them to confirm it's done, then read
+   the file and review. Only after the review passes does the commit/PR step begin.
+2. Commit with a clear message, then **push the branch and merge via a PR on GitHub**
    (see *Branch workflow* above), then return to `main` and pull.
-2. Update `PROGRESS.md`: move the status line to the new state. Add a journal entry **only
+3. Update `PROGRESS.md`: move the status line to the new state. Add a journal entry **only
    for what git/PLAN/code don't capture** — decisions (+ why), shaky spots, process/pace
    notes. No restating what we did, no commit hashes. If nothing notable, the status line
    alone is enough — don't manufacture an entry.
-3. Apply the **clearing rule** above (remove taught deferred concepts, mark resolved nuances).
-4. Update `PLAN.md` **only if the plan itself changed** (rung added/reordered/rescoped).
-5. Update `README.md` **only on a milestone-level change** (e.g. DB now integrated) — not routine.
+4. Apply the **clearing rule** above (remove taught deferred concepts, mark resolved nuances).
+5. Update `PLAN.md` **only if the plan itself changed** (rung added/reordered/rescoped).
+6. Update `README.md` **only on a milestone-level change** (e.g. DB now integrated) — not routine.
 
 **End-of-session ritual** (if we stop *mid-rung*):
 - Update `PROGRESS.md` status line to the in-progress state + what to resume with next time.
