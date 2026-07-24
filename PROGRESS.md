@@ -5,7 +5,7 @@
 > - **Deferred concepts** — the **action list**. Everything owed later, each with a due rung
 >   or trigger. This is the only part that reliably drives action; consume it at rung start.
 > - **Session log** — *history/reference only*: why we decided things. **Not reliably read,
->   and nothing in it drives action.** Never put an action item here (see CLAUDE.md rule 8).
+>   and nothing in it drives action.** Never put an action item here (see CLAUDE.md rule 9).
 
 ## Status
 ✅ Rung 3 done — `POST /tasks` creates tasks via `express.json()`; nodemon + `npm run dev` added.
@@ -23,6 +23,16 @@ and **formalise status codes** (see Deferred — 404 and 201 already exist, buil
   nothing for a bad id is broken); `res.status(201)` came at Rung 3 (correct REST for a
   create). Rung 4 must **formalise status codes across all routes** and build on these —
   do NOT re-teach 404/201 from scratch.
+- **PUT semantics vs mass assignment** → due **Rung 5/6**. Rung 4's PUT hardcodes an
+  allowlist (`{id, title, completed}`), so it **silently ignores any other field the client
+  sends** — not true "replace the resource". The pure version is `{...req.body, id: taskId}`,
+  but that's a **mass assignment** hole without a schema (client could inject `isAdmin` etc.).
+  Once the **Mongoose schema** exists (Rung 5), revisit: the schema becomes the allowlist and
+  strips unknown fields, so taking the body wholesale becomes safe. Close the loop explicitly.
+- **500 + centralised error handling** → due **Rung 6**. Status codes were formalised at
+  Rung 4 (200/201/204/400/404) but **5xx was deliberately left out** — right now an unhandled
+  crash falls through to Express's default handler. Rung 6 must make 500 deliberate via
+  error-handling middleware, and reinforce: **bad user input is always 4xx, never 5xx.**
 - **Express 5 vs Express 4 differences** → due **on trigger**: we're on Express 5 while most
   tutorials are v4. Near-identical for basic routing, but **flag it explicitly if a real
   difference ever bites** (I promised this at Rung 1).
