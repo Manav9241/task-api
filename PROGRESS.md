@@ -8,9 +8,10 @@
 >   and nothing in it drives action.** Never put an action item here (see CLAUDE.md rule 9).
 
 ## Status
-✅ Rung 3 done — `POST /tasks` creates tasks via `express.json()`; nodemon + `npm run dev` added.
-▶ **Next: Rung 4 — Full CRUD (in-memory)**: `PUT`/`PATCH /tasks/:id`, `DELETE /tasks/:id`,
-and **formalise status codes** (see Deferred — 404 and 201 already exist, build on them).
+✅ Rung 4 done — full CRUD in memory (GET/POST/PUT/PATCH/DELETE), status codes formalised.
+▶ **Next: Rung 5 — Add MongoDB**: Atlas cluster, Mongoose schema/model, swap the in-memory
+array for DB calls. Endpoints stay the same; only storage changes.
+⚠️ Two Deferred items come due at Rung 5 — read them before starting.
 
 ## Deferred concepts (owed later)
 > **The action list.** Anything **promised or spotted for later** — concepts to teach, traps
@@ -18,11 +19,6 @@ and **formalise status codes** (see Deferred — 404 and 201 already exist, buil
 > trigger). Keep visible here until paid, then remove.
 > **The test:** if it requires someone to DO something later, it belongs here — not the log.
 
-- **Status codes: 404 (Rung 2) and 201 (Rung 3) already introduced** → due **Rung 4**.
-  `res.status(404)` + the load-bearing `return` came at Rung 2 (a `:id` route returning
-  nothing for a bad id is broken); `res.status(201)` came at Rung 3 (correct REST for a
-  create). Rung 4 must **formalise status codes across all routes** and build on these —
-  do NOT re-teach 404/201 from scratch.
 - **PUT semantics vs mass assignment** → due **Rung 5/6**. Rung 4's PUT hardcodes an
   allowlist (`{id, title, completed}`), so it **silently ignores any other field the client
   sends** — not true "replace the resource". The pure version is `{...req.body, id: taskId}`,
@@ -50,6 +46,15 @@ and **formalise status codes** (see Deferred — 404 and 201 already exist, buil
 - **Process / context:**
 
 ---
+
+### 2026-07-16 — Rung 4
+- **Decisions:** PUT keeps the user's `{...existing, title, completed}` spread rather than a
+  fresh object — both are allowlists, and the spread carries `id` for free. Strict-PUT
+  semantics parked until a schema exists (see Deferred).
+- **Process / context:** refresher depth was too shallow here — PUT/PATCH was taught as
+  definitions ("replace vs partial") without covering how you build the object or the
+  mass-assignment risk. Led to CLAUDE.md rule 5. Also: POST/PUT validation was inconsistent
+  because code was given per-rung without checking it against existing routes.
 
 ### 2026-07-16 — Rung 3
 - **Decisions:** `id` comes from a standalone `nextId` counter, not `tasks.length + 1` — the
