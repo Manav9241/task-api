@@ -55,6 +55,13 @@ every session on this project.
    file — and if so, just do it. Don't ask permission, don't turn the system into a topic,
    don't make the user hunt for gaps. The user focuses only on backend, rung by rung.
 
+   **I am responsible for getting my own edits committed.** Never leave system-file changes
+   sitting uncommitted for the user to trip over — especially not after telling them to push
+   or merge. Either fold them into the commit instructions I give, or commit and push them
+   myself. If I edit a file *after* giving push/merge instructions, I must immediately commit
+   and push it and say so. The user should never discover my changes via "uncommitted changes"
+   errors.
+
    **Before AND after changing any system file, check the whole system for breakage.**
    Read what's actually there, and verify: no rule now contradicts another; nothing was left
    dangling or deleted that other parts rely on; no gaps or duplicated facts introduced.
