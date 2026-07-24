@@ -55,12 +55,12 @@ every session on this project.
    file — and if so, just do it. Don't ask permission, don't turn the system into a topic,
    don't make the user hunt for gaps. The user focuses only on backend, rung by rung.
 
-   **I am responsible for getting my own edits committed.** Never leave system-file changes
-   sitting uncommitted for the user to trip over — especially not after telling them to push
-   or merge. Either fold them into the commit instructions I give, or commit and push them
-   myself. If I edit a file *after* giving push/merge instructions, I must immediately commit
-   and push it and say so. The user should never discover my changes via "uncommitted changes"
-   errors.
+   **Don't crowd the git history with my own edits.** System-file changes are normally left
+   uncommitted and **folded into the next natural commit** (the rung's commit). Do NOT commit
+   each doc tweak separately, and do NOT commit straight to `main` outside the branch flow.
+   **The one exception:** if a branch is open and the user is about to push or merge, my
+   pending edits would leave their tree dirty — so commit/push them to that branch and say so.
+   Either way, never let them discover my changes via an "uncommitted changes" error.
 
    **Before AND after changing any system file, check the whole system for breakage.**
    Read what's actually there, and verify: no rule now contradicts another; nothing was left
