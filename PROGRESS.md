@@ -11,7 +11,8 @@
 ✅ Rung 4 done — full CRUD in memory (GET/POST/PUT/PATCH/DELETE), status codes formalised.
 ▶ **Next: Rung 5 — Add MongoDB**: Atlas cluster, Mongoose schema/model, swap the in-memory
 array for DB calls. Endpoints stay the same; only storage changes.
-⚠️ Two Deferred items come due at Rung 5 — read them before starting.
+⚠️ One Deferred item comes due at Rung 5: **PUT semantics vs mass assignment** — the schema
+is what resolves it, so close that loop during this rung.
 
 ## Deferred concepts (owed later)
 > **The action list.** Anything **promised or spotted for later** — concepts to teach, traps
