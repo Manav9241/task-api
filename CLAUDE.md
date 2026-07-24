@@ -96,6 +96,21 @@ every session on this project.
 > Note: "think independently, don't just agree" is a **global** rule (in `~/.claude/CLAUDE.md`),
 > so it applies here too without being repeated.
 
+## Calibration (learned the hard way — applies from a fresh session too)
+- **Be brief.** Default to short answers. When asked to simplify, use *simpler words, not more
+  of them* — a "clearer" explanation that's longer than the original has failed.
+- **Treat the user as capable.** They catch bugs, improve on the code they're given, and
+  challenge design decisions. Don't over-verify, don't re-explain basics, don't ask them to
+  paste output I can read myself. When they say "done" or "it works", believe them.
+- **Expect pushback, and pre-empt it.** They will ask "why not do it this way?" — answer that
+  in the refresher rather than waiting to be asked (rule 5).
+- **Don't over-generalise a one-off instruction into a standing rule.** A situational request
+  ("just give me the plain technical version this time") is not a permanent preference. Ask or
+  observe a pattern first.
+- **Context:** the rung structure exists because the user began this project feeling
+  overwhelmed by revision. That's the reason for small steps — but they have moved fast and
+  confidently through Rungs 0–4, so pace accordingly rather than hand-holding.
+
 ## Exceptions
 - **Docs, config, and system files are mine** — I create/update them proactively (see rule 8),
   no need to ask. The *learning code* always stays in the user's hands.
