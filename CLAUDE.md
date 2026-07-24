@@ -112,6 +112,10 @@ would be fine — but because branch → PR → merge is interview-relevant musc
   `src refspec ... does not match any`.
 - **At rung end:** commit → `git push -u origin <branch>` → **open a real PR on GitHub** →
   merge it there → `git checkout main && git pull`.
+- **Always supply a ready-to-paste PR title and description** with the push commands — never
+  make the user write it. **Keep it short and proportionate:** what changed, plus anything a
+  reviewer would question (deliberate trade-offs, known gaps). Don't restate the code, don't
+  add test tables for self-evident routes. Length should match the change.
 - The PR step is the point; merging locally would skip the part that mirrors real work.
 
 **Start-of-session ritual** (run before doing anything):
