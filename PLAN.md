@@ -58,36 +58,53 @@ Added once local git (`add`/`commit`) feels comfortable. Local-only until here.
 - Proper status codes (200, 201, 404)
 - **The whole REST pattern should feel repetitive/easy by here.**
 
-### Rung 5 — Add MongoDB (split: 5a + 5b)
+### Rung 5 — Add MongoDB (split: 5a + 5b + 5c)
 Storage: **MongoDB Atlas** (free cloud tier) — no local install to break.
-*Seam = infrastructure vs conversion, deliberately **not** reads vs writes: a read/write split
-would end 5a with `GET` on Mongo and `POST` on the dead array — a broken app at a PR boundary.
-5a and 5b get a branch and PR each.*
+*Split three ways because databases are **new learning** for the user, not revision (see
+PROGRESS ledger). The seam separates **understand → connect → convert**: each sub-rung is one
+mode of work, so no rung mixes first-contact concepts with a code rewrite. Every sub-rung is a
+full rung — its own branch, commit and PR. Throughout 5a and 5b the app keeps running on the
+in-memory array; only 5c swaps it, so no PR boundary lands on a knowingly broken app.*
 
-#### Rung 5a — Connect the database
-*The app stays on the in-memory array and keeps working; nothing is swapped yet.*
-*Running order — concepts and setup interleave, they don't run end-to-end:* database concepts
-→ Atlas account + create the cluster (**it provisions for a few minutes**) → Mongoose and
-async concepts **while it builds** → back to Atlas for the DB user, IP allowlist and
-connection string → code. Nothing in the Atlas wizard gets clicked before it's understood:
-its questions (tier, region, DB user, network access) *are* the database-concepts topics.
-- **Concepts — databases:** what MongoDB is (documents/collections vs rows/tables, BSON vs
-  JSON); Atlas vs local install; connection-string anatomy — it embeds a **live password**;
-  driver vs ODM (why Mongoose over raw `mongodb`)
+#### Rung 5a — What a database is, and get one running
+*Concept-heavy, light setup. No app code — `index.js` untouched, app still on the array.*
+- **Concepts — databases from zero:** why persistence at all (the in-memory array vanishes on
+  restart); a database is a **separate program** that stores data on disk and hands it back;
+  client/server — app and DB are separate things that talk; relational (tables/rows, SQL) vs
+  document (collections/documents, MongoDB) — just enough to *place* MongoDB
+- **Concepts — the pieces, high level:** MongoDB (the database), Atlas (managed MongoDB in the
+  cloud), Mongoose (the app-side gatekeeper / ODM) — *what each is and why*, not how yet
+- **Concepts — where data integrity actually lives** (the "who guarantees shape" thread, in
+  full): app-level (Mongoose) vs DB-level (SQL constraints, or MongoDB's opt-in JSON Schema
+  validation); the **multi-app risk** — client-side enforcement means two apps with different
+  schemas on one DB can write inconsistent data, and the DB won't referee; what **migration**
+  is and how it differs relational (`ALTER TABLE`, versioned tools like EF/Flyway — DB
+  enforces) vs document (no `ALTER`; update the Mongoose schema + optional transform script;
+  the DB won't help you stay consistent). **Concept only** — implementing migrations/multi-app
+  governance is out of scope (see *Deliberately NOT doing*)
+- Create the Atlas account + cluster (**it provisions for a few minutes**); DB user; IP
+  allowlist; copy the connection string
+- **Understand the connection string, don't just paste it:** what each part of
+  `mongodb+srv://user:password@host/dbname` actually is — so it's not an opaque blob
+- Store the string in `.env` (it embeds a **live password**); confirm `.env` is already ignored
+  (added Rung 0, before the file exists — the order that matters); `npm i mongoose dotenv`;
+  commit an `.env.example` with no real values
+- **Success = a real cloud database exists, credentials safely in `.env`, and the user can
+  explain what MongoDB / Atlas / Mongoose each do.** (Precedent: Rung 1.5 was also pure infra.)
+
+#### Rung 5b — Connect the app and define the model
+*Concepts + a little code. Routes still on the array; nothing swapped yet.*
 - **Concepts — Mongoose:** Schema vs Model vs Document; field types with `required` /
   `default` / `trim` / `timestamps`; `_id`, `__v` and **`strict` mode**; `mongoose.connect()`
   — where to call it, what it returns, server-start ordering
 - **Concepts — async:** callbacks → promises → `async/await`; `try/catch` in route handlers,
   **incl. the real Express 5 vs 4 difference** (v5 auto-forwards a rejected promise to the
   error handler, v4 does not); which Mongoose calls return promises, and `null` vs `[]`
-- Atlas cluster + DB user + IP allowlist
-- Confirm `.env` is already ignored (it is — added at Rung 0, *before* the file exists, which
-  is the order that matters); `npm i mongoose dotenv`; commit an `.env.example` with no values
 - Connect on boot; define the `Task` schema + model
 - Seed 1–2 documents by hand in the **Atlas UI**, plus a throwaway `Task.find()` log
 - **Success = server boots, logs a connection, and prints the seeded documents.**
 
-#### Rung 5b — Swap the storage
+#### Rung 5c — Swap the storage
 *Mechanical: the same six routes, one repeated shape.*
 - **Concepts:** `id` (number) → `_id` (ObjectId string) and what it changes for lookups, 404s
   and client-visible JSON; **CastError** on a malformed id (must not become a 500);
@@ -96,13 +113,13 @@ its questions (tier, region, DB user, network access) *are* the database-concept
   why the status codes stay identical — that's the point of the rung
 - Convert GET all → GET one → POST → PUT → PATCH → DELETE (`find`, `findById`, `create`,
   `findByIdAndUpdate`, `findByIdAndDelete`)
-- Delete `tasks` and `nextId`; remove 5a's throwaway log
+- Delete `tasks` and `nextId`; remove 5b's throwaway log
 - **Success = create a task, restart the server, GET it back.** Plus `/tasks/abc` → 400, not
   500, and the document visible in Atlas.
 
 ### Rung 6 — Robustness (polish)
-- Input validation **beyond** what the schema already enforces at 5b (cross-field rules,
-  request-shape checks) — basic required/type validation moves into the schema at 5b
+- Input validation **beyond** what the schema already enforces at 5c (cross-field rules,
+  request-shape checks) — basic required/type validation moves into the schema at 5c
 - Centralized error-handling middleware
 - Split into folders (routes / controllers / models) — refactor once it works
 - ~~Environment variables (`.env`)~~ — **pulled forward to Rung 5a**: the rung ends in a
@@ -113,7 +130,7 @@ its questions (tier, region, DB user, network access) *are* the database-concept
 - Auth (JWT) — the bridge to an intermediate "Blog API"
 
 ## Tech choices (minimal on purpose)
-- Node.js + Express; Mongoose from Rung 5a; `dotenv` from Rung 5a (moved up from Rung 6)
+- Node.js + Express; `mongoose` + `dotenv` installed Rung 5a; `dotenv` used 5a, Mongoose 5b+
 - No TypeScript, no extra frameworks
 - **nodemon** (devDependency, added Rung 3) — auto-restarts on file change; `npm run dev`
 - Testing: browser for GETs; **Thunder Client** for POST/PUT/DELETE (chosen at Rung 3 over
@@ -121,11 +138,18 @@ its questions (tier, region, DB user, network access) *are* the database-concept
 
 ## Verification
 - **Rungs 1–4:** run the server, hit the endpoint, confirm expected JSON / status code.
-- **Rung 5a:** server boots, logs a successful connection, and reads back documents seeded by
+- **Rung 5a:** a cloud database exists and the connection string is stored in `.env` (no app
+  code yet) — nothing to run; the deliverable is the database + understanding.
+- **Rung 5b:** server boots, logs a successful connection, and reads back documents seeded by
   hand in the Atlas UI.
-- **Rung 5b+:** create a task, restart the server, GET it back — proves it persists in the DB.
+- **Rung 5c+:** create a task, restart the server, GET it back — proves it persists in the DB.
 
 ## Deliberately NOT doing yet
 - No auth, frontend, deployment, Docker, or test framework
 - No folder structure until Rung 6 (one file is fine and less scary early)
 - No moving forward until the current rung feels boring
+- **No migration tooling / multi-app schema governance** (`migrate-mongo`, versioned migration
+  scripts, DB-level JSON Schema validation). Our app is the *only* writer, so the multi-app
+  inconsistency risk can't arise here — building the machinery would be scope creep. The
+  *concepts* are taught in 5a; only the *implementation* is out of scope. What you'd add in a
+  bigger system: DB-level validation as the shared referee + a versioned migration tool.

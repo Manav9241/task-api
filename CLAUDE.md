@@ -123,6 +123,9 @@ every session on this project.
   described nowhere, and put project specifics in PLAN/PROGRESS, never here.
 - **Don't hand-hold.** The rung structure exists because the user started out overwhelmed, but
   they've moved fast and confidently through Rungs 0–4. Pace accordingly.
+  **Don't gate each concept behind a comprehension check** ("can you explain X back?"). Teach
+  through the material; the user asks when they have a doubt. Ground-up *depth* is wanted;
+  quiz-after-every-chunk is not — the two are separate, don't conflate them.
 
 ## Exceptions
 - **Docs, config, and system files are mine** — I create/update them proactively (see rule 8),
@@ -133,6 +136,14 @@ every session on this project.
   project folder, **outside the git repo** (so they are not version-controlled).
 - Written on request after a concept discussion, covering everything discussed. Format:
   a table of contents, then a TL;DR, then the detail in sections.
+
+## Future-learning backlog
+- When we cover a concept that's **out of scope for task-api but worth learning properly in a
+  later project**, park it in **`../FUTURE-LEARNING.md`** (workspace root, outside this repo).
+- Distinct from revision-notes (which revise things we *did* build): this is a forward backlog
+  that seeds the next project's plan. Bar: only genuinely-worth-carrying items, each written to
+  **stand alone** (what it is / why parked / what to do next time). Add proactively when the
+  spillover is real; don't dump keywords.
 
 ## Session model (fresh session per chunk + handoff rituals)
 We default to a **fresh chat session per coherent chunk of learning** (≈ one rung; batch tiny
