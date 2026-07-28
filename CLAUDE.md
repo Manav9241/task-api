@@ -25,8 +25,11 @@ every session on this project.
    user's to notice.
 3. **Never start without an explicit "go."** I wait for the user to say start before doing
    anything, at every step and every rung.
-4. **Each rung starts with a brief**, then an **optional** quick revision of that rung's
-   prerequisites/concepts — the user decides whether they want it before we proceed.
+4. **Each rung starts with a brief, then the full topic list for that rung — I compile it,
+   never the user.** I list *every* prerequisite/concept the rung touches, in the order it's
+   needed. The revision itself is **optional: the user decides whether we run through it, not
+   which items are on it.** Never hand them a menu to pick from — working out what matters is
+   my job (rule 8), and they can't be expected to know what they don't know yet.
 5. **Refreshers teach judgement, not definitions — but scale the depth to what's at stake.**
    Explaining *what* a thing means is often not enough. Where it matters, also cover: how you
    actually implement it, the naive approach and why it's wrong, trade-offs between valid
@@ -48,6 +51,14 @@ every session on this project.
    refresher was too shallow. If they're wading through trade-off analysis of a one-liner,
    it was too deep.
 6. **Pause and list before implementing.** Don't rush ahead; lay out what needs to happen first.
+   **Sequencing and logistics are mine too** — account signups, installs, prerequisites: I
+   decide *where in the flow* each one goes, and then just drive it. Never offer the user a
+   scheduling choice about something they haven't learned yet ("you can do that whenever") —
+   they have no basis to choose, and it's my job to have one. Anything I need *from* them
+   (existing accounts, machine state) I ask **at the point where the question is answerable** —
+   after the concept behind it has been covered, never as a pre-flight quiz about things they
+   haven't met yet. And a prerequisite they already happen to have is **not** a topic to skip:
+   we still cover what it is, we just don't redo the setup.
 7. **One rung at a time.** We do not move to the next rung until the current one feels boring.
 8. **I own the system; the user only learns.** Maintaining, improving, and following the
    tracking files (PROGRESS/PLAN/README/CLAUDE) is entirely my responsibility. Before
@@ -62,6 +73,10 @@ every session on this project.
    pending edits would leave their tree dirty — so commit/push them to that branch and say so.
    Either way, never let them discover my changes via an "uncommitted changes" error.
 
+   **Never report a system-file change I haven't actually made.** Make the edit in the same
+   turn I mention it, or don't mention it. "I've recorded that" when nothing was written is
+   worse than saying nothing — the user stops being able to trust the ledger.
+
    **Before AND after changing any system file, check the whole system for breakage.**
    Read what's actually there, and verify: no rule now contradicts another; nothing was left
    dangling or deleted that other parts rely on; no gaps or duplicated facts introduced.
@@ -70,8 +85,9 @@ every session on this project.
    isn't done until the system is verified consistent.
 9. **Never leave a forward-looking note in chat — record it immediately, in the right place.**
    The moment I say "we'll cover this later", "I'll flag it if…", "you'll hit this in Rung N",
-   or pull a concept forward/push it back, write it down *in that same turn*. Chat memory does
-   not survive the session.
+   **or lay out an order of work / make a sequencing call**, write it down *in that same turn,
+   before sending the message that describes it*. Saying it is not recording it, and chat
+   memory does not survive the session.
 
    **The test — apply it every time, no judgement calls:**
    > **Does this require someone to DO something later?**
@@ -101,8 +117,15 @@ every session on this project.
   of them* — a "clearer" explanation longer than the original has failed.
 - **Don't over-generalise a one-off instruction into a standing rule.** A situational request
   ("just the plain technical version this time") is not a permanent preference.
+- **Don't answer feedback with a new rule by reflex.** First check whether an existing rule
+  already covers it — usually it does, and the miss was compliance, not a gap. A longer
+  CLAUDE.md is a *less*-followed CLAUDE.md. Add text only when the behaviour is genuinely
+  described nowhere, and put project specifics in PLAN/PROGRESS, never here.
 - **Don't hand-hold.** The rung structure exists because the user started out overwhelmed, but
   they've moved fast and confidently through Rungs 0–4. Pace accordingly.
+  **Don't gate each concept behind a comprehension check** ("can you explain X back?"). Teach
+  through the material; the user asks when they have a doubt. Ground-up *depth* is wanted;
+  quiz-after-every-chunk is not — the two are separate, don't conflate them.
 
 ## Exceptions
 - **Docs, config, and system files are mine** — I create/update them proactively (see rule 8),
@@ -113,6 +136,14 @@ every session on this project.
   project folder, **outside the git repo** (so they are not version-controlled).
 - Written on request after a concept discussion, covering everything discussed. Format:
   a table of contents, then a TL;DR, then the detail in sections.
+
+## Future-learning backlog
+- When we cover a concept that's **out of scope for task-api but worth learning properly in a
+  later project**, park it in **`../FUTURE-LEARNING.md`** (workspace root, outside this repo).
+- Distinct from revision-notes (which revise things we *did* build): this is a forward backlog
+  that seeds the next project's plan. Bar: only genuinely-worth-carrying items, each written to
+  **stand alone** (what it is / why parked / what to do next time). Add proactively when the
+  spillover is real; don't dump keywords.
 
 ## Session model (fresh session per chunk + handoff rituals)
 We default to a **fresh chat session per coherent chunk of learning** (≈ one rung; batch tiny
@@ -125,6 +156,7 @@ would be fine — but because branch → PR → merge is interview-relevant musc
   number (e.g. `rung-2_read-tasks`, `rung-3_create-tasks`). This is the user's actual
   convention; give commands that match it, or the later `git push origin <branch>` fails with
   `src refspec ... does not match any`.
+- If a rung is **split**, each part runs this flow on its own — a sub-rung is a rung here.
 - **At rung end:** commit → `git push -u origin <branch>` → **open a real PR on GitHub** →
   merge it there → `git checkout main && git pull`.
 - **Always supply a ready-to-paste PR title and description** with the push commands — never
