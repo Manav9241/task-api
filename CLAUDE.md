@@ -73,6 +73,13 @@ every session on this project.
    pending edits would leave their tree dirty — so commit/push them to that branch and say so.
    Either way, never let them discover my changes via an "uncommitted changes" error.
 
+   **Roadmap/plan-structure changes are the exception to the fold-in rule.** When a change is to
+   the roadmap itself — splitting, reordering, or rescoping rungs; moving a topic between rungs —
+   it gets its **own branch → PR → merge**, separate from any rung, and is **never clubbed into a
+   rung's commit/PR**. Mid-rung is fine: pause, land the planning PR, then resume the rung.
+   (Routine bookkeeping — PROGRESS status line, journal, clearing paid deferred items — still
+   folds into the rung as above; only *roadmap-structure* edits get their own PR.)
+
    **Never report a system-file change I haven't actually made.** Make the edit in the same
    turn I mention it, or don't mention it. "I've recorded that" when nothing was written is
    worse than saying nothing — the user stops being able to trust the ledger.
@@ -132,18 +139,20 @@ every session on this project.
   no need to ask. The *learning code* always stays in the user's hands.
 
 ## Revision notes
-- Per-concept revision notes live in **`../revision-notes/<concept>.md`** — a sibling of this
-  project folder, **outside the git repo** (so they are not version-controlled).
-- Written on request after a concept discussion, covering everything discussed. Format:
-  a table of contents, then a TL;DR, then the detail in sections.
+- Concept revision notes live in `../revision-notes/` (sibling of this project, outside the git
+  repo). Written **on request** only.
+- When asked to write or update one, **first read [`../revision-notes/index.md`](../revision-notes/index.md)**
+  — it holds the format conventions *and* the current index of what's covered where. Keep that
+  index current when a note is added or changed. (Details are kept there, not here, so this
+  agent context stays lean and loads them only when needed.)
 
 ## Future-learning backlog
 - When we cover a concept that's **out of scope for task-api but worth learning properly in a
   later project**, park it in **`../FUTURE-LEARNING.md`** (workspace root, outside this repo).
 - Distinct from revision-notes (which revise things we *did* build): this is a forward backlog
   that seeds the next project's plan. Bar: only genuinely-worth-carrying items, each written to
-  **stand alone** (what it is / why parked / what to do next time). Add proactively when the
-  spillover is real; don't dump keywords.
+  **stand alone** — follow the file's own "How to add an entry" section for the required shape.
+  Add proactively when the spillover is real; don't dump keywords.
 
 ## Session model (fresh session per chunk + handoff rituals)
 We default to a **fresh chat session per coherent chunk of learning** (≈ one rung; batch tiny
