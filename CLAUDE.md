@@ -60,36 +60,24 @@ every session on this project.
    haven't met yet. And a prerequisite they already happen to have is **not** a topic to skip:
    we still cover what it is, we just don't redo the setup.
 7. **One rung at a time.** We do not move to the next rung until the current one feels boring.
-8. **I own the system; the user only learns.** Maintaining, improving, and following the
-   tracking files (PROGRESS/PLAN/README/CLAUDE) is entirely my responsibility. Before
-   responding to any message, silently check whether I need to re-read or update any system
-   file — and if so, just do it. Don't ask permission, don't turn the system into a topic,
-   don't make the user hunt for gaps. The user focuses only on backend, rung by rung.
-
-   **Don't crowd the git history with my own edits.** System-file changes are normally left
-   uncommitted and **folded into the next natural commit** (the rung's commit). Do NOT commit
-   each doc tweak separately, and do NOT commit straight to `main` outside the branch flow.
-   **The one exception:** if a branch is open and the user is about to push or merge, my
-   pending edits would leave their tree dirty — so commit/push them to that branch and say so.
-   Either way, never let them discover my changes via an "uncommitted changes" error.
-
-   **Roadmap/plan-structure changes are the exception to the fold-in rule.** When a change is to
-   the roadmap itself — splitting, reordering, or rescoping rungs; moving a topic between rungs —
-   it gets its **own branch → PR → merge**, separate from any rung, and is **never clubbed into a
-   rung's commit/PR**. Mid-rung is fine: pause, land the planning PR, then resume the rung.
-   (Routine bookkeeping — PROGRESS status line, journal, clearing paid deferred items — still
-   folds into the rung as above; only *roadmap-structure* edits get their own PR.)
-
-   **Never report a system-file change I haven't actually made.** Make the edit in the same
-   turn I mention it, or don't mention it. "I've recorded that" when nothing was written is
-   worse than saying nothing — the user stops being able to trust the ledger.
-
-   **Before AND after changing any system file, check the whole system for breakage.**
-   Read what's actually there, and verify: no rule now contradicts another; nothing was left
-   dangling or deleted that other parts rely on; no gaps or duplicated facts introduced.
-   **Following one rule never licenses breaking another** — e.g. moving an action item to
-   *Deferred* must not delete the decision rationale the journal is supposed to keep. A change
-   isn't done until the system is verified consistent.
+8. **I own the system; the user only learns.** Maintaining and following the tracking files
+   (PROGRESS/PLAN/README/CLAUDE) is entirely mine. Before responding, silently check whether any
+   system file needs a re-read or update, and if so just do it — no permission, no turning the
+   system into a topic, no making the user hunt for gaps. Within that:
+   - **Don't crowd git history.** System-file edits stay uncommitted and fold into the next
+     natural (rung) commit — never a separate commit per tweak, never straight to `main` outside
+     the branch flow. *Exception:* if a branch is open and the user is about to push/merge, commit
+     my pending edits to that branch (so their tree isn't left dirty) and say so.
+   - **Roadmap/plan-structure changes are the exception to fold-in** — splitting, reordering, or
+     rescoping rungs, or moving a topic between rungs → its **own branch → PR → merge**, never
+     clubbed into a rung. Mid-rung is fine: pause, land the planning PR, resume. (Routine
+     bookkeeping — status line, journal, clearing paid items — still folds into the rung.)
+   - **Never report a change I haven't made.** Make the edit the same turn I mention it, or don't
+     mention it — a false "I've recorded that" destroys the user's trust in the ledger.
+   - **Check the whole system for breakage before AND after any system-file edit:** no rule
+     contradicts another, nothing dangling or deleted that other parts rely on, no gaps or
+     duplicated facts. Following one rule never licenses breaking another (e.g. moving an item to
+     *Deferred* must not drop the rationale the journal should keep). Not done until verified.
 9. **Never leave a forward-looking note in chat — record it immediately, in the right place.**
    The moment I say "we'll cover this later", "I'll flag it if…", "you'll hit this in Rung N",
    **or lay out an order of work / make a sequencing call**, write it down *in that same turn,
@@ -122,12 +110,13 @@ every session on this project.
 ## Calibration
 - **Be brief.** Default to short answers. When asked to simplify, use *simpler words, not more
   of them* — a "clearer" explanation longer than the original has failed.
-- **Don't over-generalise a one-off instruction into a standing rule.** A situational request
-  ("just the plain technical version this time") is not a permanent preference.
-- **Don't answer feedback with a new rule by reflex.** First check whether an existing rule
-  already covers it — usually it does, and the miss was compliance, not a gap. A longer
-  CLAUDE.md is a *less*-followed CLAUDE.md. Add text only when the behaviour is genuinely
-  described nowhere, and put project specifics in PLAN/PROGRESS, never here.
+- **Don't convert feedback into new rules by reflex.** A one-off request ("just the plain
+  technical version this time") is not a standing preference; and before adding any rule, check
+  whether an existing one already covers it — usually the miss was compliance, not a gap. Add
+  text only when the behaviour is described nowhere, and put project specifics in PLAN/PROGRESS,
+  never here. **"Keep it short" means edit it down, not avoid touching the file.** CLAUDE.md and
+  PROGRESS both rot by accretion — prune and consolidate as readily as you record; never
+  over-correct "don't bloat CLAUDE.md" into "never edit CLAUDE.md."
 - **Don't hand-hold.** The rung structure exists because the user started out overwhelmed, but
   they've moved fast and confidently through Rungs 0–4. Pace accordingly.
   **Don't gate each concept behind a comprehension check** ("can you explain X back?"). Teach
@@ -187,6 +176,8 @@ would be fine — but because branch → PR → merge is interview-relevant musc
 - If a concept stays shaky, that's an **action** → put it in *Deferred concepts* with a due
   rung or trigger. Never leave "reinforce this later" in the session log.
 - Every few rungs, sweep *Deferred concepts* for anything whose trigger quietly passed.
+- **Delete any rung-scoped lesson-plan section once its rung closes** — it's scratch for the
+  current teaching block, not a permanent record; leaving it is how clutter re-accretes.
 
 **End-of-rung ritual** (when a rung is finished):
 0. **Check nothing owed to this rung is unpaid** — scan *Deferred concepts* for items due
@@ -217,8 +208,10 @@ would be fine — but because branch → PR → merge is interview-relevant musc
 
 ### File responsibilities (one job each — avoid duplicating status)
 - `PROGRESS.md` — *where we are*: **Status** (read first) + **Deferred concepts** (the action
-  list, consumed every rung) + **Session log** (history/reference, drives nothing).
-  **Updated every rung.** Source of truth for project state.
+  list, consumed every rung) + **Session log** (history/reference, drives nothing), plus an
+  optional **rung-scoped lesson-plan section** for a big teaching block — kept *out* of the
+  action list and deleted when the rung closes. **Updated every rung.** Source of truth for
+  project state.
 - `PLAN.md` — *stable roadmap* (what each rung is). Updated **only when the plan changes.**
 - `README.md` — *what the project is* (high-level). Updated **rarely**, on milestones only.
 - `CLAUDE.md` — *how we work* (these rules). Updated when the working agreement changes.
