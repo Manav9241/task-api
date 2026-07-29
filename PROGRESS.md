@@ -1,104 +1,95 @@
 # PROGRESS.md — Where we are
 
-> The stable roadmap lives in **PLAN.md**. This file holds three things with **different jobs**:
+> Roadmap lives in **PLAN.md**. This file is the **current state** — three standing parts
+> (Status, Deferred concepts, Session log), plus a **temporary rung-scoped lesson-plan section**
+> while a big teaching block is active (deleted when the rung closes):
 > - **Status** — where we are right now. Read first, every session.
-> - **Deferred concepts** — the **action list**. Everything owed later, each with a due rung
->   or trigger. This is the only part that reliably drives action; consume it at rung start.
-> - **Session log** — *history/reference only*: why we decided things. **Not reliably read,
->   and nothing in it drives action.** Never put an action item here (see CLAUDE.md rule 9).
+> - **Async teaching plan** *(temporary — this is 5b's; deleted when 5b closes)* — the detailed
+>   B1–B6 lesson plan; a lesson plan, *not* an action item, kept out of the action list.
+> - **Deferred concepts** — the **action list**: what's owed, each with a due rung/trigger.
+>   **Terse** — detail lives in its own section or is re-derivable. Consumed at rung start.
+> - **Session log** — history/reference only; drives nothing. Never put an action item here
+>   (CLAUDE.md rule 9).
 
 ## Status
-✅ Rungs 0–4 + **Rung 5a done** — MongoDB Atlas free (M0) cluster provisioned; DB user +
-IP allowlist set; connection string stored in a **git-ignored `.env`** (verified ignored);
-`mongoose` + `dotenv` installed; `.env.example` committed. **No app code yet** — `index.js`
-still runs entirely on the in-memory array. DB name chosen: `taskdb` (springs into existence on
-first write in 5b). *Rung 5 is split 5a/5b/5c because databases are new learning, not revision.*
-▶ **Next: Rung 5b — Connect the app and define the model.** Mongoose (Schema/Model/Document,
-field types, `strict`, `_id`), async + `try/catch` (+ Express 5 vs 4), `mongoose.connect()` on
-boot, define the `Task` schema/model, seed 1–2 docs by hand in Atlas, read them back with
-`Task.find()`. **Still no route swaps** — that's 5c. *First thing to confirm in 5b: the stored
-credentials actually connect (5a never ran a live connection — that was deliberately deferred).*
-⚠️ Deferred due 5b (see list): **Express 5 vs 4**, **Mongoose 9 vs older versions**, close the
-**async "why"** + **shape-enforcement** loops opened in 5a; **databases-are-new** spans 5a–5c.
+✅ **Rungs 0–4 + Rung 5a done** — Atlas free (M0) cluster; DB user + IP allowlist; connection
+string in a **git-ignored `.env`** (verified ignored); `mongoose` + `dotenv` installed;
+`.env.example` committed. **No app code yet** — `index.js` still runs on the in-memory array.
+DB name `taskdb` (created on first write in 5b). *Rung 5 is split 5a/5b/5c because databases
+are new learning, not revision.*
+▶ **In progress (2026-07-29): Rung 5b — connect the app + define the `Task` model.** Currently
+in the front-loaded async teaching block (see *Async teaching plan* below): **B1–B3 done, B4
+next.** No route swaps yet — that's 5c. One rung / one PR (teaching produces no commits).
+⚠️ **Several concepts fall due this rung** — see *Deferred concepts* below (the items marked
+*due 5b* / trigger-fired); the start-of-session ritual consumes them.
+
+## Async teaching plan — Rung 5b (B1–B6, front-loaded block)
+> The user asked for **full ground-up async**, not refresher depth — this overrides the
+> "user is JS-fluent, keep it light" default. One rung / one PR; teaching commits nothing.
+> This is 5b's densest slice and may span sittings — no git split, it's all teaching.
+>
+> **Delivery:** phase by phase, the user sets the pace. **Break long phases at natural
+> sub-beats and pause for doubts — don't dump a whole phase in one message.** Examples at
+> every beat. When re-teaching a block, give the clean version only — no meta-commentary
+> about what was wrong last time.
+
+**Teach in THIS order** (restructured from the user's raw 5-phase list):
+- **B1 — Why async exists** ✅ — single thread + slow I/O, anchored on our own code.
+- **B2 — The machine** ✅ — call stack → blocking vs non-blocking → Web APIs/libuv → event
+  loop + callback queue. (Examples: `setTimeout`, a freezing loop, `setTimeout(…,0)` order.)
+- **B3 — Callbacks** ✅ — define the callback atom first (this retro-names B2's `setTimeout`
+  argument), then callback hell / pyramid → inversion of control.
+- **B4 — Promises** ◀ **NEXT** — states → `new Promise` → `.then/.catch/.finally` → chaining
+  → error propagation → **macro vs microtasks (HERE, not up front)** → promisification.
+- **B5 — async/await** — sugar over promises; prove it's the same machine → `try/catch`
+  (fold in **Express 5 vs 4** here) → sequential vs parallel, the `await`-in-a-loop bottleneck.
+- **B6 — Concurrency** — `Promise.all/allSettled/race/any` contrasted; then `for await…of` +
+  `AbortController` **concept-only → parked (FUTURE-LEARNING #6)**.
+- Then: **Mongoose concepts → the wiring code.**
+
+**Design notes (why this order):** motivation is front-loaded; micro/macrotasks live in B4
+because a microtask *is* a promise reaction (unlearnable before promises exist); promises and
+async/await are taught as one continuous thread, not two separate phases.
 
 ## Deferred concepts (owed later)
-> **The action list.** Anything **promised or spotted for later** — concepts to teach, traps
-> to demonstrate, things to watch for. Each item states **when it's due** (a rung, or a
-> trigger). Keep visible here until paid, then remove.
-> **The test:** if it requires someone to DO something later, it belongs here — not the log.
+> **The action list.** Each item: what's owed + **when it's due**. Keep terse — full teaching
+> detail belongs in its own section, and generic technical facts are re-derivable. Remove once
+> paid. **Test:** if it requires someone to DO something later, it belongs here — not the log.
 
-- **Databases are NEW, not revision — teach ground-up for the rest of Rung 5.** Not just
-  MongoDB/Mongoose — **the concept of a database itself** is new for the user (they've only
-  touched one from the outside via C#/EF/SSMS, never learned what it is). They have strong
-  Node/Express/JS fluency, but treat the whole DB layer as first-contact. For every DB topic:
-  start one level lower than feels necessary, build from zero, one idea at a time, concrete
-  tiny examples anchored to code they already have (e.g. the in-memory array), **no stacked
-  jargon or analogies until the base idea is solid** — SQL/EF comparisons and terms like BSON,
-  native-validation, ODM are *refinements added after*, never the vehicle. Whole thread (5a–5c).
-  **Hands-on steps too:** define the *noun* before asking for the action — what a **cluster**
-  is before "create a cluster", what **IP allowlisting** is before setting it, what a **database
-  user** is before creating one. Never send the user to do something whose name is new to them;
-  the term comes first, then the click.
-  **Carve-out:** the *async* block in 5b (callbacks/promises/`async/await`) is NOT new — the
-  user is fluent in JS; teach it at refresher depth. "Ground-up" targets the **DB-specific**
-  concepts only; don't slow-walk async under the same banner. **Watch 5b's load:** it's the
-  densest slice (Mongoose concepts + async + connect + model) — if it drags, it can split at
-  the concepts/code seam, same as we did for the rung overall.
-- **Shape enforcement threads across 5a→5b→5c at three depths — do NOT let the 5a layer slip.**
-  Same topic, deepening each rung: **CONCEPT (5a)** — MongoDB is permissive (no shape guarantee
-  by default) and **Mongoose is the app-side enforcer**; this is *why Mongoose exists*, so it
-  belongs in 5a's "what is Mongoose" explanation and must be taught there, **not deferred**.
-  **CODE (5b)** — write the `Task` schema + `strict`/`required`; the schema *is* the shape.
-  **PAYOFF (5c)** — validation→400 and safe wholesale `req.body` (see the PUT and re-anchor
-  items below). Caught 2026-07-24: I hand-waved the 5a concept ("deal with it when it matters")
-  and mis-filed it into 5b — that collapse is exactly what would make the 3-way split pointless.
-- **Close the async "why" in 5b — it was opened in 5a** → due **Rung 5b**. During 5a's
-  "database is a separate program" concept, async was motivated up front: talking to a separate
-  program over a network isn't instant, so the app must *wait for an answer*, and **that** is
-  where `async/await` comes from — not a MongoDB quirk. When teaching async in 5b, open from
-  that origin (separate program → non-instant → await), don't teach it cold as syntax.
-- **Re-anchor the 5b concepts at their 5c point-of-use** → due **Rung 5c**. The split puts two
-  concepts a rung away from the code that needs them: **`strict` mode** (taught 5b) is what
-  makes 5c's PUT-from-`req.body` safe, and **`required` in the schema** (written 5b) is what
-  5c maps to a 400. Re-teach both where they're used — don't assume they carried across.
-  Also hold the line: **5c stays on per-route `try/catch`**; centralised error middleware is
-  Rung 6, and 5c must not drift into it.
-- **PUT semantics vs mass assignment** → due **Rung 5c**. Rung 4's PUT hardcodes an
-  allowlist (`{id, title, completed}`), so it **silently ignores any other field the client
-  sends** — not true "replace the resource". The pure version is `{...req.body, id: taskId}`,
-  but that's a **mass assignment** hole without a schema (client could inject `isAdmin` etc.).
-  Once the **Mongoose schema** exists (written in 5b), revisit: it becomes the allowlist and
-  strips unknown fields, so taking the body wholesale becomes safe. Close the loop explicitly.
-- **Re-scope Rung 6 once Rung 5 lands** → due **at Rung 6 start (revisit trigger)**. Under
-  "databases are new, not revision", two of Rung 6's three topics are DB-facing and heavier
-  than their one-line billing: **input validation** = Mongoose validators/custom validators,
-  and **centralised error handling** = mapping Mongoose error types (`CastError`,
-  `ValidationError`) to status codes. Bundled with the folder refactor, that's the same
-  over-bundling we split Rung 5 to avoid. Before starting Rung 6, decide whether it needs the
-  same split. How deep 5a–5c had to go is the input to that call — don't redesign 6 early.
-  (Related: the "Later/optional" pagination/filter/sort line is really DB *querying* —
-  sort/skip/limit/operators — heavier than it reads for a newcomer, if we ever pick it up.)
-- **500 + centralised error handling** → due **Rung 6**. Status codes were formalised at
-  Rung 4 (200/201/204/400/404) but **5xx was deliberately left out** — right now an unhandled
-  crash falls through to Express's default handler. Rung 6 must make 500 deliberate via
-  error-handling middleware, and reinforce: **bad user input is always 4xx, never 5xx.**
-- **Express 5 vs Express 4 differences** → **TRIGGER FIRED — due Rung 5b** (with the async
-  `try/catch` teaching). Promised at Rung 1 to flag it if a real difference ever bit. It bites
-  here: in **Express 5 an async handler that rejects is forwarded to the error handler
-  automatically**; in **Express 4 it is not** (an unhandled rejection just hangs the request —
-  hence `express-async-handler` and wrapper helpers all over v4 tutorials). Teach both, because
-  tutorials the user follows will be v4.
-- **Mongoose 9 vs older tutorial versions** → due **Rung 5b (on trigger, like Express 5v4)**.
-  Installed Mongoose `^9.8.1`; most tutorials/StackOverflow use 6/7/8, which had real API
-  changes across majors (e.g. callback support removed in v7 — everything is promises now;
-  `strictQuery` default flips). When writing schema/connect/query code in 5b, flag any place a
-  v9 behaviour differs from what a follows-along tutorial would show. Don't pre-teach the whole
-  changelog — surface a difference only where it actually bites, same discipline as Express 5v4.
-- **README setup step for `.env`** → due **Rung 5b** (the milestone where the app first *reads*
-  `.env`). From 5b, `npm install` + `npm run dev` alone won't start the app — it needs a `.env`
-  with a real `MONGODB_URI`. Update README "Getting started": copy `.env.example` → `.env`, fill
-  in an Atlas connection string. *(The Atlas-credential/`.env` setup itself was paid in 5a:
-  `.env` created + verified git-ignored, `.env.example` committed, `dotenv` installed.)*
+- **Databases are NEW, not revision** → whole of Rung 5. The *concept of a database* is
+  first-contact for the user (they've only used one from outside via C#/EF/SSMS). Teach the
+  DB layer a level lower than feels needed: one idea at a time, tiny examples on code they
+  already have (the array), **no stacked jargon/analogies until the base lands** (BSON, ODM,
+  SQL comparisons are refinements added after). Hands-on: **define the noun before the action**
+  (what a cluster/IP-allowlist/DB-user *is* before doing it).
+- **Shape enforcement — same topic, 3 depths.** CONCEPT (5a): Mongo is permissive; **Mongoose
+  is the app-side enforcer** — this is *why Mongoose exists*. CODE (5b): the `Task` schema +
+  `strict`/`required` *is* the shape. PAYOFF (5c): validation→400 + safe wholesale `req.body`.
+  Don't let the 5a concept slip into 5b.
+- **Re-anchor 5b concepts at their 5c point-of-use** → 5c. `strict` (5b) is what makes 5c's
+  PUT-from-`req.body` safe; `required` (5b) is what 5c maps to a 400. Re-teach where used.
+  Also **hold the line: 5c stays on per-route `try/catch`** — centralised middleware is Rung 6.
+- **PUT semantics vs mass assignment** → 5c. Rung 4's PUT hardcodes `{id,title,completed}`, so
+  it silently drops other fields — not a true replace. Pure `{...req.body, id}` is a
+  mass-assignment hole *without* a schema; once the 5b schema exists it becomes the allowlist
+  and taking the body wholesale is safe. Close the loop explicitly.
+- **Re-scope Rung 6 before starting it** → Rung 6 start. Two of its three topics are DB-facing
+  and heavier than billed: input validation = Mongoose validators; centralised errors = mapping
+  `CastError`/`ValidationError` → status codes. Decide whether Rung 6 needs its own split (input:
+  how deep 5a–5c had to go). Related: "Later/optional" pagination/filter/sort is really DB
+  *querying* (sort/skip/limit/operators) — heavier than it reads.
+- **500 + centralised error handling** → Rung 6. 5xx was deliberately left out at Rung 4 (an
+  unhandled crash falls through to Express's default handler). Make 500 deliberate via error
+  middleware; reinforce **bad user input = 4xx, never 5xx**.
+- **Express 5 vs 4** → 5b (trigger fired; teach with the async `try/catch`). In v5 a rejected
+  async handler is auto-forwarded to the error handler; in v4 it is **not** (the request hangs —
+  hence `express-async-handler`). Teach both, because the user's tutorials will be v4.
+- **Mongoose 9 vs older tutorials** → 5b. Installed `^9.8.1`; tutorials use 6/7/8 (callbacks
+  removed in v7 — all promises now; `strictQuery` default flipped). Flag a difference only
+  where it actually bites, not the whole changelog.
+- **README `.env` setup step** → 5b (first rung the app *reads* `.env`). Add to "Getting
+  started": copy `.env.example` → `.env`, fill in `MONGODB_URI`. (The `.env`/dotenv setup
+  itself was done in 5a.)
 
 ---
 
@@ -114,6 +105,16 @@ credentials actually connect (5a never ran a live connection — that was delibe
 
 ---
 
+### 2026-07-29 — Rung 5b (async block, in progress)
+- **Process / context:** two delivery corrections the user made, now folded into the *Async
+  teaching plan* header: (1) **no forward-references** — B2 used "callback" and B3 opened on
+  "the way async was done" before the callback atom was defined; fixed by defining the atom at
+  B3's open. The topic order (B1–B6) was audited and is sound — this was prose, not ordering.
+  (2) **chunk long explanations** and re-teach clean (no meta-commentary about past mistakes).
+- **System cleanup + standing lesson:** the tracking files had rotted by accretion — the
+  *Deferred* action list had absorbed full curricula + history and stopped being scannable.
+  Durable takeaway (now in the Calibration rule): **prune as readily as you record.**
+
 ### 2026-07-24 — Rung 5 (decisions taken before starting)
 - **Decisions:** Rung 5 **split into three — 5a (understand + provision) / 5b (connect +
   model) / 5c (convert routes).** First split two ways (infra/conversion); re-split when the
@@ -126,28 +127,17 @@ credentials actually connect (5a never ran a live connection — that was delibe
   **`.env` + `dotenv` pulled forward from Rung 6 into 5a** — every rung ends in a commit, so
   an inline Atlas string would put a live password into permanent git history.
 - **Process / context:** a run of the same failure — handing the user decisions that were
-  mine. The topic list was offered as a *menu to pick from* (they can't know which topics
-  matter before learning them → rule 4 rewrite); the Atlas signup was left for them to
-  schedule, then queried as a pre-flight "do you already have an account?" about a service
-  they hadn't met yet (→ rule 6's sequencing clause). Also: doc edits were announced as done
-  before being written (→ rule 8), and a Rung-5-specific git instruction was written into
-  CLAUDE.md as if it were a general rule — **project specifics go in PLAN/PROGRESS; CLAUDE.md
-  only describes how I behave.** The user caught all of these, which is itself the signal:
-  the system is meant to spare them that.
-- **Replanning as its own trigger.** When the user said databases were new, I lowered teaching
-  altitude but left the plan intact and started teaching — missing that a scope-changing fact
-  demands re-checking the rung's *size*, not just the *pitch*. That's what forced the 5a→5a/5b
-  re-split mid-rung. Lesson: new information about the user's baseline is a signal to re-scope,
-  not only to re-explain.
-- **"Covered" must mean audited against the topic, not against my own list.** Twice I assured
-  the user Rung 5's plan "covered" the confusing DB material; both times I'd checked only the
-  items I'd already identified (shape-enforcement, connection-string, async depth) — never
-  audited for *data integrity across apps* or *migrations*, which were absent. The user asked
-  the direct questions (two apps + divergent schemas → inconsistency; schema change over time;
-  what is migration) and exposed the gap. Lesson: when asserting coverage of a *domain*, audit
-  against the domain's real surface, not against my own prior notes — otherwise "all covered"
-  is just "all of what I happened to list." Fix landed: integrity/migration **concepts** added
-  to 5a; migration **implementation** explicitly ruled out of scope (single-writer app).
+  mine (topic list offered as a menu; Atlas signup left for them to schedule then queried as a
+  pre-flight quiz; doc edits announced before written; a Rung-5-specific git instruction written
+  into CLAUDE.md as if general). Fixes landed in rules 4/6/8. The user caught all of these —
+  which is itself the signal the system is meant to spare them.
+- **Replanning is its own trigger.** New information about the user's baseline (databases are
+  new) is a signal to re-scope the rung's *size*, not only lower the *pitch* — missing that
+  forced the mid-rung 5a→5a/5b re-split.
+- **"Covered" must mean audited against the topic, not my own list.** I twice assured the plan
+  "covered" the DB material having only checked items I'd already identified — missed data
+  integrity across apps + migrations until the user asked. Fix: integrity/migration *concepts*
+  added to 5a; migration *implementation* ruled out of scope (single-writer app).
 
 ### 2026-07-16 — Rung 4
 - **Decisions:** PUT keeps the user's `{...existing, title, completed}` spread rather than a
