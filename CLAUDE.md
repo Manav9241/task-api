@@ -30,6 +30,16 @@ every session on this project.
    needed. The revision itself is **optional: the user decides whether we run through it, not
    which items are on it.** Never hand them a menu to pick from — working out what matters is
    my job (rule 8), and they can't be expected to know what they don't know yet.
+   **Then honour that order in the teaching prose itself: never use a concept before the beat
+   that introduces it.** Ground-up means *no forward-references* — don't invoke a term or tool
+   the user hasn't been shown yet (this has recurred: `try/catch`, `throw`). Assumed prior
+   fluency sets the *pace only*; it never licenses referencing an untaught concept. If it isn't
+   yet introduced, introduce it or rephrase without it.
+   **A topic list the user hands me is *scope* (what to cover), not teaching *sequence*.** Derive
+   the sequence myself: simulate each explanation before teaching it, write down what every step
+   leans on, and confirm each dependency is already covered. That dependency pass — not the order
+   items happened to be listed in — sets the teaching order, and it's done *up front*, not
+   discovered one painful beat at a time.
 5. **Refreshers teach judgement, not definitions — but scale the depth to what's at stake.**
    Explaining *what* a thing means is often not enough. Where it matters, also cover: how you
    actually implement it, the naive approach and why it's wrong, trade-offs between valid

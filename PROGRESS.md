@@ -1,13 +1,9 @@
 # PROGRESS.md — Where we are
 
-> Roadmap lives in **PLAN.md**. This file is the **current state** — three standing parts
-> (Status, Deferred concepts, Session log), plus a **temporary rung-scoped lesson-plan section**
-> while a big teaching block is active (deleted when the rung closes):
+> Roadmap lives in **PLAN.md**. This file is the **current state**, in three parts:
 > - **Status** — where we are right now. Read first, every session.
-> - **Async teaching plan** *(temporary — this is 5b's; deleted when 5b closes)* — the detailed
->   B1–B6 lesson plan; a lesson plan, *not* an action item, kept out of the action list.
 > - **Deferred concepts** — the **action list**: what's owed, each with a due rung/trigger.
->   **Terse** — detail lives in its own section or is re-derivable. Consumed at rung start.
+>   **Terse** — detail is re-derivable. Consumed at rung start.
 > - **Session log** — history/reference only; drives nothing. Never put an action item here
 >   (CLAUDE.md rule 9).
 
@@ -17,39 +13,10 @@ string in a **git-ignored `.env`** (verified ignored); `mongoose` + `dotenv` ins
 `.env.example` committed. **No app code yet** — `index.js` still runs on the in-memory array.
 DB name `taskdb` (created on first write in 5b). *Rung 5 is split 5a/5b/5c because databases
 are new learning, not revision.*
-▶ **In progress (2026-07-29): Rung 5b — connect the app + define the `Task` model.** Currently
-in the front-loaded async teaching block (see *Async teaching plan* below): **B1–B3 done, B4
-next.** No route swaps yet — that's 5c. One rung / one PR (teaching produces no commits).
-⚠️ **Several concepts fall due this rung** — see *Deferred concepts* below (the items marked
-*due 5b* / trigger-fired); the start-of-session ritual consumes them.
-
-## Async teaching plan — Rung 5b (B1–B6, front-loaded block)
-> The user asked for **full ground-up async**, not refresher depth — this overrides the
-> "user is JS-fluent, keep it light" default. One rung / one PR; teaching commits nothing.
-> This is 5b's densest slice and may span sittings — no git split, it's all teaching.
->
-> **Delivery:** phase by phase, the user sets the pace. **Break long phases at natural
-> sub-beats and pause for doubts — don't dump a whole phase in one message.** Examples at
-> every beat. When re-teaching a block, give the clean version only — no meta-commentary
-> about what was wrong last time.
-
-**Teach in THIS order** (restructured from the user's raw 5-phase list):
-- **B1 — Why async exists** ✅ — single thread + slow I/O, anchored on our own code.
-- **B2 — The machine** ✅ — call stack → blocking vs non-blocking → Web APIs/libuv → event
-  loop + callback queue. (Examples: `setTimeout`, a freezing loop, `setTimeout(…,0)` order.)
-- **B3 — Callbacks** ✅ — define the callback atom first (this retro-names B2's `setTimeout`
-  argument), then callback hell / pyramid → inversion of control.
-- **B4 — Promises** ◀ **NEXT** — states → `new Promise` → `.then/.catch/.finally` → chaining
-  → error propagation → **macro vs microtasks (HERE, not up front)** → promisification.
-- **B5 — async/await** — sugar over promises; prove it's the same machine → `try/catch`
-  (fold in **Express 5 vs 4** here) → sequential vs parallel, the `await`-in-a-loop bottleneck.
-- **B6 — Concurrency** — `Promise.all/allSettled/race/any` contrasted; then `for await…of` +
-  `AbortController` **concept-only → parked (FUTURE-LEARNING #6)**.
-- Then: **Mongoose concepts → the wiring code.**
-
-**Design notes (why this order):** motivation is front-loaded; micro/macrotasks live in B4
-because a microtask *is* a promise reaction (unlearnable before promises exist); promises and
-async/await are taught as one continuous thread, not two separate phases.
+⏸ **Rung 5b — connect the app + define the `Task` model — NOT STARTED (replanning).** Its
+async-teaching sub-plan was cleared 2026-07-29 to be re-derived from scratch — nothing prior is
+locked in. What 5b must *cover* lives in **PLAN.md** (Rung 5b) plus the **Deferred concepts**
+below; that's the scope to replan against.
 
 ## Deferred concepts (owed later)
 > **The action list.** Each item: what's owed + **when it's due**. Keep terse — full teaching
@@ -81,9 +48,9 @@ async/await are taught as one continuous thread, not two separate phases.
 - **500 + centralised error handling** → Rung 6. 5xx was deliberately left out at Rung 4 (an
   unhandled crash falls through to Express's default handler). Make 500 deliberate via error
   middleware; reinforce **bad user input = 4xx, never 5xx**.
-- **Express 5 vs 4** → 5b (trigger fired; teach with the async `try/catch`). In v5 a rejected
-  async handler is auto-forwarded to the error handler; in v4 it is **not** (the request hangs —
-  hence `express-async-handler`). Teach both, because the user's tutorials will be v4.
+- **Express 5 vs 4** → 5b (trigger fired). In v5 a rejected async handler is auto-forwarded to
+  the error handler; in v4 it is **not** (the request hangs — hence `express-async-handler`).
+  Teach both, because the user's tutorials will be v4.
 - **Mongoose 9 vs older tutorials** → 5b. Installed `^9.8.1`; tutorials use 6/7/8 (callbacks
   removed in v7 — all promises now; `strictQuery` default flipped). Flag a difference only
   where it actually bites, not the whole changelog.
@@ -104,16 +71,6 @@ async/await are taught as one continuous thread, not two separate phases.
 - **Process / context:**
 
 ---
-
-### 2026-07-29 — Rung 5b (async block, in progress)
-- **Process / context:** two delivery corrections the user made, now folded into the *Async
-  teaching plan* header: (1) **no forward-references** — B2 used "callback" and B3 opened on
-  "the way async was done" before the callback atom was defined; fixed by defining the atom at
-  B3's open. The topic order (B1–B6) was audited and is sound — this was prose, not ordering.
-  (2) **chunk long explanations** and re-teach clean (no meta-commentary about past mistakes).
-- **System cleanup + standing lesson:** the tracking files had rotted by accretion — the
-  *Deferred* action list had absorbed full curricula + history and stopped being scannable.
-  Durable takeaway (now in the Calibration rule): **prune as readily as you record.**
 
 ### 2026-07-24 — Rung 5 (decisions taken before starting)
 - **Decisions:** Rung 5 **split into three — 5a (understand + provision) / 5b (connect +
