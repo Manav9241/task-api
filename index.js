@@ -1,9 +1,28 @@
+require("dotenv").config();
 const express = require("express");
+const mongoose = require("mongoose");
 
 const app = express();
 const PORT = 3000;
 
 app.use(express.json());
+
+const taskSchema = new mongoose.Schema(
+    {
+        title: {
+            type: String,
+            required: true,
+            trim: true
+        },
+        completed: {
+            type: Boolean,
+            default: false
+        },
+    },
+    { timestamps: true}
+);
+
+const Task = mongoose.model("Task", taskSchema);
 
 const tasks = [
     {id: 1, title: "Learn Node.js", completed: false},
@@ -97,6 +116,25 @@ app.delete("/tasks/:id", (req, res) => {
     res.status(204).send();
 });
 
-app.listen(PORT, () => {
-    console.log(`Server is running on http://localhost:${PORT}`);
-});
+async function connectDB() {
+    try {
+        await mongoose.connect(process.env.MONGODB_URI);
+        console.log("MongoDB connected");
+    } catch (err) {
+        console.error("MongoDB connection failed: ", err.message);
+        process.exit(1);
+    }
+}
+
+async function start() {
+    await connectDB();
+    
+    const tasksInDb = await Task.find();
+    console.log("Tasks in DB: ", tasksInDb);
+
+    app.listen(PORT, () => {
+        console.log(`Server is running on http://localhost:${PORT}`);
+    });
+}
+
+start();
