@@ -8,55 +8,40 @@
 >   (CLAUDE.md rule 9).
 
 ## Status
-✅ **Rungs 0–4 + Rung 5a done** — Atlas free (M0) cluster; DB user + IP allowlist; connection
-string in a **git-ignored `.env`** (verified ignored); `mongoose` + `dotenv` installed;
-`.env.example` committed. **No app code yet** — `index.js` still runs on the in-memory array.
-DB name `taskdb` (created on first write in 5b). *Rung 5 is split 5a/5b/5c because databases
-are new learning, not revision.*
-⏸ **Rung 5b — connect the app + define the `Task` model — NOT STARTED (replanning).** Its
-async-teaching sub-plan was cleared 2026-07-29 to be re-derived from scratch — nothing prior is
-locked in. What 5b must *cover* lives in **PLAN.md** (Rung 5b) plus the **Deferred concepts**
-below; that's the scope to replan against.
+✅ **Rungs 0–4, 5a, 5b done.** Atlas M0 cluster; connection string in a git-ignored `.env`;
+`mongoose` + `dotenv` installed. **5b landed:** the app now **connects to MongoDB on boot**
+(`mongoose.connect`, connect-then-listen, `process.exit(1)` on failure), the **`Task` schema +
+model** are defined, and a **throwaway `Task.find()`** logs documents seeded by hand in Atlas.
+**Routes still run on the in-memory array — only 5c swaps them.** DB `taskdb` / collection `tasks`
+(auto-created by Mongoose). Revision notes this rung: `javascript-async.md`, `mongoose.md`.
+⏭ **Rung 5c next — swap the storage.** Convert the six routes off the array onto Mongoose
+(`find`/`findById`/`create`/`findByIdAndUpdate`/`findByIdAndDelete`); `id`→`_id`; `CastError`→400;
+schema validation→400; delete `tasks`/`nextId` and the throwaway `Task.find()` log. See PLAN.md 5c.
 
 ## Deferred concepts (owed later)
 > **The action list.** Each item: what's owed + **when it's due**. Keep terse — full teaching
 > detail belongs in its own section, and generic technical facts are re-derivable. Remove once
 > paid. **Test:** if it requires someone to DO something later, it belongs here — not the log.
 
-- **Databases are NEW, not revision** → whole of Rung 5. The *concept of a database* is
-  first-contact for the user (they've only used one from outside via C#/EF/SSMS). Teach the
+- **Databases are NEW, not revision** → whole of Rung 5 (5c remains). The *concept of a database*
+  is first-contact for the user (they've only used one from outside via C#/EF/SSMS). Teach the
   DB layer a level lower than feels needed: one idea at a time, tiny examples on code they
-  already have (the array), **no stacked jargon/analogies until the base lands** (BSON, ODM,
-  SQL comparisons are refinements added after). Hands-on: **define the noun before the action**
-  (what a cluster/IP-allowlist/DB-user *is* before doing it).
-- **Shape enforcement — same topic, 3 depths.** CONCEPT (5a): Mongo is permissive; **Mongoose
-  is the app-side enforcer** — this is *why Mongoose exists*. CODE (5b): the `Task` schema +
-  `strict`/`required` *is* the shape. PAYOFF (5c): validation→400 + safe wholesale `req.body`.
-  Don't let the 5a concept slip into 5b.
-- **Re-anchor 5b concepts at their 5c point-of-use** → 5c. `strict` (5b) is what makes 5c's
-  PUT-from-`req.body` safe; `required` (5b) is what 5c maps to a 400. Re-teach where used.
-  Also **hold the line: 5c stays on per-route `try/catch`** — centralised middleware is Rung 6.
-- **PUT semantics vs mass assignment** → 5c. Rung 4's PUT hardcodes `{id,title,completed}`, so
-  it silently drops other fields — not a true replace. Pure `{...req.body, id}` is a
-  mass-assignment hole *without* a schema; once the 5b schema exists it becomes the allowlist
-  and taking the body wholesale is safe. Close the loop explicitly.
+  already have (the array), **no stacked jargon/analogies until the base lands**. Hands-on:
+  **define the noun before the action**.
+- **Shape-enforcement payoff + PUT mass-assignment** → 5c. 5a taught the concept, 5b the code
+  (`Task` schema + `strict`/`required`). At 5c, re-anchor **at point of use**: `required`→**400**
+  (replacing the hand-written `if (!req.body.title)` guards); `strict` makes taking `req.body`
+  **wholesale** safe — it's now an allowlist — closing **Rung 4's PUT mass-assignment hole** (Rung 4
+  hardcodes `{id,title,completed}`, silently dropping other fields — not a true replace).
+  **Hold the line: 5c stays on per-route `try/catch`** — centralised middleware is Rung 6.
 - **Re-scope Rung 6 before starting it** → Rung 6 start. Two of its three topics are DB-facing
   and heavier than billed: input validation = Mongoose validators; centralised errors = mapping
-  `CastError`/`ValidationError` → status codes. Decide whether Rung 6 needs its own split (input:
-  how deep 5a–5c had to go). Related: "Later/optional" pagination/filter/sort is really DB
-  *querying* (sort/skip/limit/operators) — heavier than it reads.
+  `CastError`/`ValidationError` → status codes. Decide whether Rung 6 needs its own split. Related:
+  "Later/optional" pagination/filter/sort is really DB *querying* (sort/skip/limit/operators) —
+  heavier than it reads.
 - **500 + centralised error handling** → Rung 6. 5xx was deliberately left out at Rung 4 (an
   unhandled crash falls through to Express's default handler). Make 500 deliberate via error
   middleware; reinforce **bad user input = 4xx, never 5xx**.
-- **Express 5 vs 4** → 5b (trigger fired). In v5 a rejected async handler is auto-forwarded to
-  the error handler; in v4 it is **not** (the request hangs — hence `express-async-handler`).
-  Teach both, because the user's tutorials will be v4.
-- **Mongoose 9 vs older tutorials** → 5b. Installed `^9.8.1`; tutorials use 6/7/8 (callbacks
-  removed in v7 — all promises now; `strictQuery` default flipped). Flag a difference only
-  where it actually bites, not the whole changelog.
-- **README `.env` setup step** → 5b (first rung the app *reads* `.env`). Add to "Getting
-  started": copy `.env.example` → `.env`, fill in `MONGODB_URI`. (The `.env`/dotenv setup
-  itself was done in 5a.)
 
 ---
 
@@ -71,6 +56,20 @@ below; that's the scope to replan against.
 - **Process / context:**
 
 ---
+
+### 2026-07-31 — Rung 5b
+- **Decisions:** **Connect-then-listen** ordering (`await connectDB()` before `app.listen`) —
+  fail fast/loud rather than serve before the DB is reachable. Advanced-async concept pass
+  (`for await...of`, `AbortController`) **descoped** to a future project — task-api has no anchor
+  to make it concrete (FUTURE-LEARNING #6 corrected).
+- **Process / context:** async taught from absolute zero over many small beats; the unlock was
+  framing `await` as **suspend the *function*, free the *thread*** (function-vs-thread, not
+  "blocking"). User steered toward **full depth but tighter prose** (deep in small beats, not
+  walls) and leaner doc-writing. Revision notes `javascript-async.md` + `mongoose.md` written
+  mid-rung.
+- **DNS issue self-resolved.** The prior-session `mongodb+srv://` `ECONNREFUSED` (dead local DNS
+  proxy) is gone — the app connects with the SRV string, no `dns.setServers` hack in the code.
+  Nothing was owed to strip.
 
 ### 2026-07-24 — Rung 5 (decisions taken before starting)
 - **Decisions:** Rung 5 **split into three — 5a (understand + provision) / 5b (connect +

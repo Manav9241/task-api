@@ -34,12 +34,20 @@ Manage a list of tasks over HTTP:
 # install dependencies
 npm install
 
+# set up environment variables
+cp .env.example .env
+# then edit .env and set MONGODB_URI to your MongoDB connection string
+
 # run in development (auto-restarts on file changes)
 npm run dev
 
 # or run it plainly
 npm start
 ```
+
+`MONGODB_URI` is **required** — the server connects to MongoDB on startup and exits if it
+can't (it won't serve requests without a database). Get the connection string from your
+MongoDB Atlas cluster (**Connect → Drivers**).
 
 Then open http://localhost:3000 in your browser.
 
