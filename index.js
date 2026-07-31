@@ -24,96 +24,123 @@ const taskSchema = new mongoose.Schema(
 
 const Task = mongoose.model("Task", taskSchema);
 
-const tasks = [
-    {id: 1, title: "Learn Node.js", completed: false},
-    {id: 2, title: "Learn Express.js", completed: false},
-    {id: 3, title: "Build the Task API", completed: true}
-];
-
-let nextId = tasks.length + 1;
-
 app.get("/", (req, res) => {
     res.send("Server is running");
 });
 
-app.get("/tasks", (req, res) => {
-    res.json(tasks);
+app.get("/tasks", async (req, res) => {
+    try {
+        const tasks = await Task.find();
+        res.json(tasks);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: "Server Error" });
+    }
 });
 
-app.get("/tasks/:id", (req, res) => {
-    const taskId = Number(req.params.id);
-    const task = tasks.find((t) => t.id === taskId);
-    if (!task) {
-        return res.status(404).json({ message: "Task not found" });
+app.get("/tasks/:id", async (req, res) => {
+    try {
+        const task = await Task.findById(req.params.id);
+        if (!task) {
+            return res.status(404).json({ message: "Task not found" });
+        }
+        res.json(task);
+    }catch (err) {
+        if (err.name === "CastError") {
+            return res.status(400).json({ message: "Invalid Task ID" });
+        }
+        console.error(err);
+        res.status(500).json({ message: "Server Error" });
     }
-    
-    res.json(task);
 });
 
-app.post("/tasks", (req, res) => {
-    if (!req.body.title) {
-        return res.status(400).json({ message: "Title is required" });
+app.post("/tasks", async (req, res) => {
+    try {
+        const { title, completed } = req.body ?? {};
+        const task = await Task.create({ title, completed: completed ?? false });
+        res.status(201).json(task);
+    } catch (err) {
+        if (err.name === "ValidationError") {
+            return res.status(400).json({ message: err.message });
+        }
+        console.error(err);
+        res.status(500).json({ message: "Server Error" });
     }
-
-    const newTask =  {
-        id: nextId++,
-        title: req.body.title,
-        completed: req.body.completed ?? false
-    };
-    tasks.push(newTask);
-    res.status(201).json(newTask);
 });
 
-app.put("/tasks/:id", (req, res) => {
-    const taskId = Number(req.params.id);
-    const taskIndex = tasks.findIndex((t) => t.id === taskId);
+app.put("/tasks/:id", async (req, res) => {
+    try {
+        const { title, completed } = req.body ?? {};
 
-    if (taskIndex === -1) {
-        return res.status(404).json({ message: "Task not found" });
+        if (title === undefined) {
+            return res.status(400).json({ message: "Title is required" });
+        }
+
+        const task = await Task.findByIdAndUpdate(
+            req.params.id,
+            { title, completed: completed ?? false },
+            { new: true, runValidators: true }
+        );
+        
+        if (!task) {
+            return res.status(404).json({ message: "Task not found" });
+        }
+        res.json(task);
+    } catch (err) {
+        if (err.name === "CastError") {
+            return res.status(400).json({ message: "Invalid Task ID" });
+        }
+        if (err.name === "ValidationError") {
+            return res.status(400).json({ message: err.message });
+        }
+        console.error(err);
+        res.status(500).json({ message: "Server Error" });
     }
-
-    if(!req.body.title) {
-        return res.status(400).json({ message: "Title is required" });
-    }
-
-    tasks[taskIndex] = {
-        ...tasks[taskIndex],
-        title: req.body.title,
-        completed: req.body.completed ?? false
-    };
-
-    res.json(tasks[taskIndex]);
 });
 
-app.patch("/tasks/:id", (req, res) => {
-    const taskId = Number(req.params.id);
-    const task = tasks.find(t => t.id === taskId);
+app.patch("/tasks/:id", async(req, res) => {
+    try {
+        const { title, completed } = req.body ?? {};
+        const update = {};
+        if (title !== undefined) update.title = title;
+        if (completed !== undefined) update.completed = completed;
 
-    if (!task) {
-        return res.status(404).json({ message: "Task not found" });
-    }
-    
-    if (req.body.title !== undefined) {
-        task.title = req.body.title;
-    }
+        const task = await Task.findByIdAndUpdate(
+            req.params.id,
+            update,
+            { new: true, runValidators: true }
+        );
 
-    if (req.body.completed !== undefined) {
-        task.completed = req.body.completed;
+        if (!task) {
+            return res.status(404).json({ message: "Task not found" });
+        }
+        res.json(task);
+    } catch (err) {
+        if (err.name === "CastError") {
+            return res.status(400).json({ message: "Invalid Task ID" });
+        }
+        if (err.name === "ValidationError") {
+            return res.status(400).json({ message: err.message });
+        }
+        console.error(err);
+        res.status(500).json({ message: "Server Error" });
     }
-
-    res.json(task);
 });
 
-app.delete("/tasks/:id", (req, res) => {
-    const taskId = Number(req.params.id);
-    const taskIndex = tasks.findIndex((t) => t.id === taskId);
-
-    if (taskIndex === -1) {
-        return res.status(404).json({ message: "Task not found" });
+app.delete("/tasks/:id", async (req, res) => {
+    try {
+        const task = await Task.findByIdAndDelete(req.params.id);
+        if (!task) {
+            return res.status(404).json({ message: "Task not found" });
+        }
+        res.status(204).send();
+    } catch (err) {
+        if (err.name === "CastError") {
+            return res.status(400).json({ message: "Invalid Task ID" });
+        }
+        console.error(err);
+        res.status(500).json({ message: "Server Error" });
     }
-
-    tasks.splice(taskIndex, 1);
-    res.status(204).send();
 });
 
 async function connectDB() {
@@ -129,9 +156,6 @@ async function connectDB() {
 async function start() {
     await connectDB();
     
-    const tasksInDb = await Task.find();
-    console.log("Tasks in DB: ", tasksInDb);
-
     app.listen(PORT, () => {
         console.log(`Server is running on http://localhost:${PORT}`);
     });

@@ -23,6 +23,13 @@ every session on this project.
    naming style), apply it to all analogous routes — or say explicitly why not. Introducing
    a rule in one place and ignoring it in the parallel place is my bug to catch, not the
    user's to notice.
+   **Default to the production-correct pattern, not the minimum a toy schema happens to get
+   away with.** "The app doesn't need it" is not a reason to write or teach the weaker version
+   (e.g. allowlist `req.body` explicitly rather than leaning on the schema being small) — this
+   is interview revision, so the correct habit *is* the deliverable. This governs *how we write
+   what we build*, not *what we build* — scope is still minimal-on-purpose (see PLAN's
+   *Deliberately NOT doing*). When we do defer the fuller form, say so at the point of use and
+   why.
 3. **Never start without an explicit "go."** I wait for the user to say start before doing
    anything, at every step and every rung.
 4. **Each rung starts with a brief, then the full topic list for that rung — I compile it,
@@ -119,12 +126,17 @@ every session on this project.
 
 ## Calibration
 - **Be brief.** Default to short answers. When asked to simplify, use *simpler words, not more
-  of them* — a "clearer" explanation longer than the original has failed.
+  of them* — a "clearer" explanation longer than the original has failed. **This covers the
+  docs/notes/entries I write, not just chat** — match length to the trigger; a one-line note must
+  not swell into a multi-paragraph entry.
 - **Don't convert feedback into new rules by reflex.** A one-off request ("just the plain
   technical version this time") is not a standing preference; and before adding any rule, check
-  whether an existing one already covers it — usually the miss was compliance, not a gap. Add
-  text only when the behaviour is described nowhere, and put project specifics in PLAN/PROGRESS,
-  never here. **"Keep it short" means edit it down, not avoid touching the file.** CLAUDE.md and
+  whether an existing one already covers it — usually the miss was compliance, not a gap. **But a
+  miss that *recurs across sessions* is itself a gap:** I keep no memory between sessions, so
+  "I'll comply better next time" cannot persist and is not a fix — encode it (usually by
+  *sharpening or relocating* an existing rule, not adding a new one). Do not use "compliance, not a
+  gap" to dodge a durable improvement. Add text only when the behaviour is described nowhere, and
+  put project specifics in PLAN/PROGRESS, never here. **"Keep it short" means edit it down, not avoid touching the file.** CLAUDE.md and
   PROGRESS both rot by accretion — prune and consolidate as readily as you record; never
   over-correct "don't bloat CLAUDE.md" into "never edit CLAUDE.md."
 - **Don't hand-hold.** The rung structure exists because the user started out overwhelmed, but
@@ -132,6 +144,11 @@ every session on this project.
   **Don't gate each concept behind a comprehension check** ("can you explain X back?"). Teach
   through the material; the user asks when they have a doubt. Ground-up *depth* is wanted;
   quiz-after-every-chunk is not — the two are separate, don't conflate them.
+- **Depth in small beats, not walls.** "Be brief" is the default for *revision*; for genuinely
+  **new / first-contact concepts** (e.g. async, Mongoose) the user wants full depth — but
+  delivered **one small beat per response**, pausing so they can cross-question, *not* one long
+  wall covering the whole unit. Deep overall, small per turn. A unit may span several short
+  responses; end each on a natural stop and invite questions before continuing.
 
 ## Exceptions
 - **Docs, config, and system files are mine** — I create/update them proactively (see rule 8),
@@ -146,12 +163,14 @@ every session on this project.
   agent context stays lean and loads them only when needed.)
 
 ## Future-learning backlog
-- When we cover a concept that's **out of scope for task-api but worth learning properly in a
-  later project**, park it in **`../FUTURE-LEARNING.md`** (workspace root, outside this repo).
-- Distinct from revision-notes (which revise things we *did* build): this is a forward backlog
-  that seeds the next project's plan. Bar: only genuinely-worth-carrying items, each written to
-  **stand alone** — follow the file's own "How to add an entry" section for the required shape.
-  Add proactively when the spillover is real; don't dump keywords.
+- **`../FUTURE-LEARNING.md`** (workspace root, outside this repo) is the **user's** independent,
+  cross-project idea-list of topics worth building a *future project* around. **Added on request
+  only** — when the user asks. It is **not** part of this project's tracking system.
+- When asked to add to it, follow the file's own **"About / How to add an entry"** section for its
+  purpose and shape (kept there, not here, so this context stays lean).
+- **Never park a rung-specific obligation there.** Anything *owed* to a current or upcoming rung
+  goes in `PROGRESS.md` → *Deferred concepts* (the only list consumed at rung start) — even if the
+  topic *also* seeds a future project. FUTURE-LEARNING holds ideas, not obligations.
 
 ## Session model (fresh session per chunk + handoff rituals)
 We default to a **fresh chat session per coherent chunk of learning** (≈ one rung; batch tiny
