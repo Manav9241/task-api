@@ -16,22 +16,22 @@
 logged server-side, not returned); write-routes **allowlist `req.body`** (destructure), never spread.
 **App persists across restarts** (the 5c success bar). DB `taskdb` / collection `tasks`. Revision
 notes so far: `javascript-async.md`, `mongoose.md`.
-⏭ **Rung 6 next — robustness/polish.** Centralised error middleware (deliberate 500s), validation
-beyond the schema, folder split (routes/controllers/models). **Re-scope Rung 6 first** — see Deferred.
+⏭ **Rung 6 split into 6a + 6b** (planning PR landed). **6a next — centralised error handling:**
+one `(err, req, res, next)` handler replacing the six repeated try/catch ladders; Express 4-vs-5
+async forwarding (owed from 5b); a thin validation beat. **6b — MVC/layered architecture** (taught
+architecture-first) + the folder split. See PLAN for both.
 
 ## Deferred concepts (owed later)
 > **The action list.** Each item: what's owed + **when it's due**. Keep terse — full teaching
 > detail belongs in its own section, and generic technical facts are re-derivable. Remove once
 > paid. **Test:** if it requires someone to DO something later, it belongs here — not the log.
 
-- **Re-scope Rung 6 before starting it** → Rung 6 start. Two of its three topics are DB-facing
-  and heavier than billed: input validation = Mongoose validators; centralised errors = mapping
-  `CastError`/`ValidationError` → status codes. Decide whether Rung 6 needs its own split. Related:
-  "Later/optional" pagination/filter/sort is really DB *querying* (sort/skip/limit/operators) —
-  heavier than it reads.
-- **500 + centralised error handling** → Rung 6. 5xx was deliberately left out at Rung 4 (an
+- **500 + centralised error handling** → Rung 6a. 5xx was deliberately left out at Rung 4 (an
   unhandled crash falls through to Express's default handler). Make 500 deliberate via error
-  middleware; reinforce **bad user input = 4xx, never 5xx**.
+  middleware; reinforce **bad user input = 4xx, never 5xx**. Cover **Express 4-vs-5 async
+  forwarding** here too (owed from 5b — the app currently hand-catches in every route).
+- **Pagination/filter/sort is DB *querying*, not a light add-on** → if/when tackled (Later/optional).
+  It's `sort`/`skip`/`limit` + query operators — heavier than the one-liner it reads as.
 
 ---
 
@@ -46,6 +46,17 @@ beyond the schema, folder split (routes/controllers/models). **Re-scope Rung 6 f
 - **Process / context:**
 
 ---
+
+### 2026-07-31 — Rung 6 re-scope (planning PR)
+- **Decisions:** **Split Rung 6 → 6a (centralised error handling) + 6b (MVC/architecture).**
+  The `CastError`/`ValidationError`/500 mapping the deferred note feared was *already written
+  inline* at 5c, so 6a is about DRYing the six repeated try/catch ladders into one handler — not
+  learning the mapping. "Validation beyond the schema" is genuinely thin for a two-field model, so
+  it folds into 6a as a small beat rather than standing as its own part. 6b promoted from
+  "mechanical refactor" to a **first-contact architecture concept** at the user's request — MVC
+  taught architecture-first (separation of concerns, the API-has-no-View wrinkle, the service-layer
+  seam, vs layered/hexagonal), *then* the file split. Two parts not three: validation too thin to
+  stand alone; the folder-split must follow the error refactor, not precede it (else split-then-rewrite).
 
 ### 2026-07-31 — Rung 5c
 - **Decisions:** **Allowlist `req.body` by destructuring named fields on every write-route; never

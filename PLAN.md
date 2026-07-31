@@ -117,11 +117,39 @@ in-memory array; only 5c swaps it, so no PR boundary lands on a knowingly broken
 - **Success = create a task, restart the server, GET it back.** Plus `/tasks/abc` → 400, not
   500, and the document visible in Atlas.
 
-### Rung 6 — Robustness (polish)
-- Input validation **beyond** what the schema already enforces at 5c (cross-field rules,
-  request-shape checks) — basic required/type validation moves into the schema at 5c
-- Centralized error-handling middleware
-- Split into folders (routes / controllers / models) — refactor once it works
+### Rung 6 — Robustness (polish) — split: 6a + 6b
+*Split two ways because 6a's error-middleware is a first-contact concept and 6b's MVC is
+new-ish **architecture** the user wants taught at the architecture level — not the "mechanical
+refactor" it was first billed as. Each sub-rung is a full rung (own branch, commit, PR). The
+seam: **make it robust (6a) → make it structured (6b)** — 6b's file-split must come *after*
+6a, or we'd split files then immediately rewrite them.*
+
+#### Rung 6a — Centralized error handling
+- **Concept — Express error-handling middleware:** the 4-arg `(err, req, res, next)`
+  signature, how Express recognises it and routes errors to it, `next(err)`, and the
+  **Express 4-vs-5 async difference** (v5 auto-forwards a rejected promise from an async
+  handler to the error handler; v4 does not) — owed from 5b.
+- Collapse the per-route `try/catch` ladders (`CastError`/`ValidationError`/generic-500,
+  currently repeated in all six routes) into **one** error handler that maps error → status
+  code in a single place. Reinforce **bad user input = 4xx, never 5xx**.
+- **Validation beyond the schema** — genuinely thin for a two-field model: add any missing
+  schema validators (e.g. `maxlength` on `title`); note where *request-shape* validation would
+  live in a bigger app (`express-validator`/`zod`) — concept only, deferred as scope.
+- **Success = every route funnels errors through one handler; status-code behaviour is
+  unchanged from 5c — that's the point.**
+
+#### Rung 6b — MVC / layered architecture
+- **Concept — MVC as an architecture** (taught architecture-first, not Express-first):
+  separation of concerns (Model = data + domain rules, View = presentation, Controller =
+  request handling/orchestration); where it came from and how the web adapted it; the **API
+  wrinkle** — a JSON API has no real View (the response *is* the view), so Express "MVC" really
+  means **routes → controllers → (services) → models**; why layer at all (testability,
+  single-responsibility, replaceability); "fat model, skinny controller"; the honest call on
+  whether a two-field app needs a **service layer**; how it sits next to layered/n-tier and
+  hexagonal; and that Express MVC is a *convention*, not framework-enforced.
+- Then the refactor: split `index.js` into `routes/`, `controllers/`, `models/`, `middleware/`
+  (the 6a error handler moves here) once behaviour is stable.
+- **Success = same API, reorganised into layers; the single-file app is gone.**
 - ~~Environment variables (`.env`)~~ — **pulled forward to Rung 5a**: the rung ends in a
   commit, so an inline connection string would put a live Atlas password in git history.
 
