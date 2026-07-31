@@ -23,7 +23,8 @@ Manage a list of tasks over HTTP:
 | GET    | `/tasks`      | List all tasks     |
 | GET    | `/tasks/:id`  | Get one task       |
 | POST   | `/tasks`      | Create a task      |
-| PUT    | `/tasks/:id`  | Update a task      |
+| PUT    | `/tasks/:id`  | Replace a task     |
+| PATCH  | `/tasks/:id`  | Update part of a task |
 | DELETE | `/tasks/:id`  | Delete a task      |
 
 *(Endpoints are added gradually as the project progresses.)*
@@ -54,6 +55,14 @@ Then open http://localhost:3000 in your browser.
 Non-GET requests (POST/PUT/DELETE) can't be sent from the browser's address bar — use
 [Thunder Client](https://marketplace.visualstudio.com/items?itemName=rangav.vscode-thunder-client)
 (VS Code extension) or `curl`.
+
+## Troubleshooting
+
+- **Startup fails with `querySrv ECONNREFUSED ... mongodb.net`** (using a `mongodb+srv://` string) —
+  this is a **Node.js DNS-detection bug on some versions**, *not* an Atlas or code problem: Node
+  **v24.18.0** auto-detects DNS as `127.0.0.1`, breaking SRV lookups. Fix by running a Node version
+  that resolves SRV correctly — **v24.11.1 LTS is verified working**. No code/`.env` change is
+  needed once the Node version is right. (Root-caused in a Codex session.)
 
 ## Project files
 - [`README.md`](README.md) — this file: what the project is and how to run it

@@ -8,32 +8,22 @@
 >   (CLAUDE.md rule 9).
 
 ## Status
-✅ **Rungs 0–4, 5a, 5b done.** Atlas M0 cluster; connection string in a git-ignored `.env`;
-`mongoose` + `dotenv` installed. **5b landed:** the app now **connects to MongoDB on boot**
-(`mongoose.connect`, connect-then-listen, `process.exit(1)` on failure), the **`Task` schema +
-model** are defined, and a **throwaway `Task.find()`** logs documents seeded by hand in Atlas.
-**Routes still run on the in-memory array — only 5c swaps them.** DB `taskdb` / collection `tasks`
-(auto-created by Mongoose). Revision notes this rung: `javascript-async.md`, `mongoose.md`.
-⏭ **Rung 5c next — swap the storage.** Convert the six routes off the array onto Mongoose
-(`find`/`findById`/`create`/`findByIdAndUpdate`/`findByIdAndDelete`); `id`→`_id`; `CastError`→400;
-schema validation→400; delete `tasks`/`nextId` and the throwaway `Task.find()` log. See PLAN.md 5c.
+✅ **Rungs 0–4, 5a, 5b, 5c done.** Atlas M0 cluster; connection string in a git-ignored `.env`;
+`mongoose` + `dotenv` installed. **5c landed:** all six routes now run on **Mongoose**
+(`find`/`findById`/`create`/`findByIdAndUpdate`/`findByIdAndDelete`) — the in-memory `tasks` array,
+`nextId`, and 5b's throwaway `Task.find()` log are **deleted**. `id`→`_id` (ObjectId);
+`CastError`→**400**, `ValidationError`→**400**, per-route `try/catch` with a generic 500 (`err`
+logged server-side, not returned); write-routes **allowlist `req.body`** (destructure), never spread.
+**App persists across restarts** (the 5c success bar). DB `taskdb` / collection `tasks`. Revision
+notes so far: `javascript-async.md`, `mongoose.md`.
+⏭ **Rung 6 next — robustness/polish.** Centralised error middleware (deliberate 500s), validation
+beyond the schema, folder split (routes/controllers/models). **Re-scope Rung 6 first** — see Deferred.
 
 ## Deferred concepts (owed later)
 > **The action list.** Each item: what's owed + **when it's due**. Keep terse — full teaching
 > detail belongs in its own section, and generic technical facts are re-derivable. Remove once
 > paid. **Test:** if it requires someone to DO something later, it belongs here — not the log.
 
-- **Databases are NEW, not revision** → whole of Rung 5 (5c remains). The *concept of a database*
-  is first-contact for the user (they've only used one from outside via C#/EF/SSMS). Teach the
-  DB layer a level lower than feels needed: one idea at a time, tiny examples on code they
-  already have (the array), **no stacked jargon/analogies until the base lands**. Hands-on:
-  **define the noun before the action**.
-- **Shape-enforcement payoff + PUT mass-assignment** → 5c. 5a taught the concept, 5b the code
-  (`Task` schema + `strict`/`required`). At 5c, re-anchor **at point of use**: `required`→**400**
-  (replacing the hand-written `if (!req.body.title)` guards); `strict` makes taking `req.body`
-  **wholesale** safe — it's now an allowlist — closing **Rung 4's PUT mass-assignment hole** (Rung 4
-  hardcodes `{id,title,completed}`, silently dropping other fields — not a true replace).
-  **Hold the line: 5c stays on per-route `try/catch`** — centralised middleware is Rung 6.
 - **Re-scope Rung 6 before starting it** → Rung 6 start. Two of its three topics are DB-facing
   and heavier than billed: input validation = Mongoose validators; centralised errors = mapping
   `CastError`/`ValidationError` → status codes. Decide whether Rung 6 needs its own split. Related:
@@ -57,6 +47,24 @@ schema validation→400; delete `tasks`/`nextId` and the throwaway `Task.find()`
 
 ---
 
+### 2026-07-31 — Rung 5c
+- **Decisions:** **Allowlist `req.body` by destructuring named fields on every write-route; never
+  spread it wholesale** — even though our 2-field schema + `strict` would make wholesale safe
+  *today*. User's call, and the right one: this is interview revision, so the correct-by-default
+  pattern is the deliverable; "the toy doesn't need it" trains the wrong reflex. `strict` stays as
+  the floor (drops unknown fields); the route allowlist encodes *intent* (which fields a client may
+  set), which `strict` structurally can't. Encoded as a standing principle in CLAUDE.md rule 2.
+  PATCH allowlists *and* stays partial (only client-provided keys), so it doesn't clobber omitted
+  fields to `undefined`.
+- **Gotcha — `required` can't fire on a *missing* field during an update.** `findByIdAndUpdate`
+  strips `undefined` from the update, so `runValidators` only checks fields *present* — great for
+  PATCH (partial), but it means an empty-body PUT skips `required` and would 200 instead of 400.
+  PUT therefore keeps **one explicit `if (title === undefined) → 400` guard** (the lone hand-written
+  guard that survives, PUT-only; POST is covered by `create` running full validation, PATCH by
+  partial semantics). Separately, an empty body makes `req.body` `undefined`, so destructuring it
+  threw a `TypeError`→500 until we defaulted `req.body ?? {}` on all three write-routes. Both are
+  Rung-6 fodder — a centralised layer should smooth over them.
+
 ### 2026-07-31 — Rung 5b
 - **Decisions:** **Connect-then-listen** ordering (`await connectDB()` before `app.listen`) —
   fail fast/loud rather than serve before the DB is reachable. Advanced-async concept pass
@@ -67,9 +75,10 @@ schema validation→400; delete `tasks`/`nextId` and the throwaway `Task.find()`
   "blocking"). User steered toward **full depth but tighter prose** (deep in small beats, not
   walls) and leaner doc-writing. Revision notes `javascript-async.md` + `mongoose.md` written
   mid-rung.
-- **DNS issue self-resolved.** The prior-session `mongodb+srv://` `ECONNREFUSED` (dead local DNS
-  proxy) is gone — the app connects with the SRV string, no `dns.setServers` hack in the code.
-  Nothing was owed to strip.
+- **DNS `ECONNREFUSED` on Atlas SRV — not self-resolved.** A later Codex session root-caused it to
+  a **Node-version DNS-detection bug** (SRV lookup broke on one Node build, works on Node LTS); the
+  fix + exact versions are recorded in **README → Troubleshooting**. Code carries no
+  `dns.setServers` hack.
 
 ### 2026-07-24 — Rung 5 (decisions taken before starting)
 - **Decisions:** Rung 5 **split into three — 5a (understand + provision) / 5b (connect +
