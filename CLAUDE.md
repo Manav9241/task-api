@@ -223,9 +223,16 @@ would be fine — but because branch → PR → merge is interview-relevant musc
 4. Apply the **clearing rule** above (remove taught deferred concepts, mark resolved nuances).
 5. Update `PLAN.md` **only if the plan itself changed** (rung added/reordered/rescoped).
 6. Update `README.md` **only on a milestone-level change** (e.g. DB now integrated) — not routine.
+7. **Memory check.** Did a durable fact about the *user* or how we work together surface this rung
+   — their background, a strong preference, a correction? → save it to the memory system
+   (`memory/`; auto-loads via `MEMORY.md`; the *how* is already in session context — no need to
+   restate it here). Keep **project mechanics** in PROGRESS/PLAN/README/CLAUDE — never mirror them
+   into memory (one source of truth; a project-scoped memory that duplicates them just drifts).
 
 **End-of-session ritual** (if we stop *mid-rung*):
 - Update `PROGRESS.md` status line to the in-progress state + what to resume with next time.
+- **Memory check** (end-of-rung step 7) — a strong preference or correction often surfaces
+  mid-rung; capture it before the session closes rather than losing it.
 
 **IMPORTANT — separate bookkeeping from closing down:**
 - **Bookkeeping is prompt, not permission-gated.** The moment a rung is genuinely finished
