@@ -8,19 +8,23 @@
 >   (CLAUDE.md rule 9).
 
 ## Status
-✅ **Rungs 0–4, 5a, 5b, 5c, 6a done.** Atlas M0 cluster; connection string in a git-ignored `.env`;
-`mongoose` + `dotenv` installed. All six routes run on **Mongoose**
-(`find`/`findById`/`create`/`findByIdAndUpdate`/`findByIdAndDelete`); `id`→`_id` (ObjectId);
-write-routes **allowlist `req.body`** (destructure), never spread. **App persists across restarts.**
-DB `taskdb` / collection `tasks`. **6a landed:** per-route `try/catch` ladders **gone** — every route
-wrapped in a `asyncHandler(fn)` HOF (`.catch(next)`, explicit forwarding, not framework auto-forward)
-and deliberate errors `throw new AppError(statusCode, msg)`; **one** `(err, req, res, next)` handler maps
-`err.statusCode` → `CastError`/`ValidationError`→400 → generic 500 (`err` logged server-side, never
-returned). `title` gained `maxlength: 200`. Status codes **identical to 5c** (the 6a success bar).
-Revision notes so far: `javascript-async.md`, `mongoose.md`.
-⏭ **6b next — MVC/layered architecture** (taught architecture-first: separation of concerns, the
-API-has-no-View wrinkle, the service-layer seam, vs layered/hexagonal) + the folder split
-(`routes/`, `controllers/`, `models/`, `middleware/` — the 6a error handler moves there). See PLAN.
+✅ **Rungs 0–4, 5a, 5b, 5c, 6a, 6b done — the full planned ladder is complete.** Atlas M0 cluster;
+connection string in a git-ignored `.env`; `mongoose` + `dotenv` installed. All six routes run on
+**Mongoose** (`find`/`findById`/`create`/`findByIdAndUpdate`/`findByIdAndDelete`); `id`→`_id`
+(ObjectId); write-routes **allowlist `req.body`** (destructure), never spread; `title` has
+`maxlength: 200`. **App persists across restarts.** DB `taskdb` / collection `tasks`. **Error handling
+(6a):** every route wrapped in an `asyncHandler(fn)` HOF (`.catch(next)`, explicit forwarding);
+deliberate errors `throw new AppError(statusCode, msg)`; **one** `(err, req, res, next)` handler maps
+`err.statusCode` → `CastError`/`ValidationError`→400 → generic 500 (`err` logged, never returned).
+**6b landed:** single-file `index.js` split into **layers** — `models/task.js`, `controllers/taskController.js`
+(6 named handlers), `routes/taskRoutes.js` (`express.Router()` + `router.route()` chaining, mounted at
+`/tasks`), `middleware/asyncHandler.js` + `middleware/errorHandler.js`, `utils/AppError.js`; `index.js`
+is now thin composition (config → `express.json()` → mount router → error handler last → connect+listen).
+No service layer (2-field CRUD doesn't warrant one). **Behaviour byte-identical to 6a** — verified across
+all 13 GET/POST/PUT/PATCH/DELETE cases against the live DB. Revision notes: `javascript-async.md`, `mongoose.md`.
+⏭ **Core roadmap done.** Remaining items are **Later / optional** (see PLAN): pagination/filter/sort on
+`GET /tasks`, then Auth (JWT) as the bridge to an intermediate "Blog API". Nothing is *owed* — next rung
+is the user's pick.
 
 ## Deferred concepts (owed later)
 > **The action list.** Each item: what's owed + **when it's due**. Keep terse — full teaching
@@ -54,9 +58,21 @@ API-has-no-View wrinkle, the service-layer seam, vs layered/hexagonal) + the fol
 - **Process:** concept pass re-planned twice on user pushback — first over-compressed (cut interview
   substance, not just walls), then corrected the auto-forward-vs-explicit framing. Depth calibration:
   "don't go too deep" ≠ "drop what interviews ask."
-- **Process / context:**
 
 ---
+
+### 2026-08-03 — Rung 6b
+- **Decisions:** **`router.route()` chaining** over flat `router.get/post` — both our paths are
+  multi-method, so grouping by path (write the path once) is the cleaner, idiomatic fit; I'd defaulted
+  to the flat form and the user caught the better option. **`AppError` lives in `utils/`, not
+  `middleware/`** — it's a plain error *type* controllers throw, not a function Express runs in the
+  pipeline. **No service layer** — a 2-field CRUD app has no logic beyond call-model-and-respond;
+  adding one would be an empty hop (cargo-culting the anti-pattern). Taught fat-model/skinny-controller
+  as the reason it's fine here (rules already live on the schema).
+- **Process:** hexagonal architecture taught properly on request (real order-service example + a Java
+  code sketch showing ports/adapters + DI), not hand-waved as "overkill." Two typing-stage bugs caught
+  in review — hardcoded `completed: false` in POST, and a missing `await` on PUT's `findByIdAndUpdate`.
+  I ran the 13-case suite myself this time (server + HTTP), self-cleaning the test docs.
 
 ### 2026-07-31 — Rung 6 re-scope (planning PR)
 - **Decisions:** **Split Rung 6 → 6a (centralised error handling) + 6b (MVC/architecture).**
