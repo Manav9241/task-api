@@ -8,28 +8,25 @@
 >   (CLAUDE.md rule 9).
 
 ## Status
-✅ **Rungs 0–4, 5a, 5b, 5c done.** Atlas M0 cluster; connection string in a git-ignored `.env`;
-`mongoose` + `dotenv` installed. **5c landed:** all six routes now run on **Mongoose**
-(`find`/`findById`/`create`/`findByIdAndUpdate`/`findByIdAndDelete`) — the in-memory `tasks` array,
-`nextId`, and 5b's throwaway `Task.find()` log are **deleted**. `id`→`_id` (ObjectId);
-`CastError`→**400**, `ValidationError`→**400**, per-route `try/catch` with a generic 500 (`err`
-logged server-side, not returned); write-routes **allowlist `req.body`** (destructure), never spread.
-**App persists across restarts** (the 5c success bar). DB `taskdb` / collection `tasks`. Revision
-notes so far: `javascript-async.md`, `mongoose.md`.
-⏭ **Rung 6 split into 6a + 6b** (planning PR landed). **6a next — centralised error handling:**
-one `(err, req, res, next)` handler replacing the six repeated try/catch ladders; Express 4-vs-5
-async forwarding (owed from 5b); a thin validation beat. **6b — MVC/layered architecture** (taught
-architecture-first) + the folder split. See PLAN for both.
+✅ **Rungs 0–4, 5a, 5b, 5c, 6a done.** Atlas M0 cluster; connection string in a git-ignored `.env`;
+`mongoose` + `dotenv` installed. All six routes run on **Mongoose**
+(`find`/`findById`/`create`/`findByIdAndUpdate`/`findByIdAndDelete`); `id`→`_id` (ObjectId);
+write-routes **allowlist `req.body`** (destructure), never spread. **App persists across restarts.**
+DB `taskdb` / collection `tasks`. **6a landed:** per-route `try/catch` ladders **gone** — every route
+wrapped in a `asyncHandler(fn)` HOF (`.catch(next)`, explicit forwarding, not framework auto-forward)
+and deliberate errors `throw new AppError(statusCode, msg)`; **one** `(err, req, res, next)` handler maps
+`err.statusCode` → `CastError`/`ValidationError`→400 → generic 500 (`err` logged server-side, never
+returned). `title` gained `maxlength: 200`. Status codes **identical to 5c** (the 6a success bar).
+Revision notes so far: `javascript-async.md`, `mongoose.md`.
+⏭ **6b next — MVC/layered architecture** (taught architecture-first: separation of concerns, the
+API-has-no-View wrinkle, the service-layer seam, vs layered/hexagonal) + the folder split
+(`routes/`, `controllers/`, `models/`, `middleware/` — the 6a error handler moves there). See PLAN.
 
 ## Deferred concepts (owed later)
 > **The action list.** Each item: what's owed + **when it's due**. Keep terse — full teaching
 > detail belongs in its own section, and generic technical facts are re-derivable. Remove once
 > paid. **Test:** if it requires someone to DO something later, it belongs here — not the log.
 
-- **500 + centralised error handling** → Rung 6a. 5xx was deliberately left out at Rung 4 (an
-  unhandled crash falls through to Express's default handler). Make 500 deliberate via error
-  middleware; reinforce **bad user input = 4xx, never 5xx**. Cover **Express 4-vs-5 async
-  forwarding** here too (owed from 5b — the app currently hand-catches in every route).
 - **Pagination/filter/sort is DB *querying*, not a light add-on** → if/when tackled (Later/optional).
   It's `sort`/`skip`/`limit` + query operators — heavier than the one-liner it reads as.
 
@@ -43,6 +40,20 @@ architecture-first) + the folder split. See PLAN for both.
 
 ### (template) YYYY-MM-DD — Rung N
 - **Decisions:** _(what we chose and why — no action items)_
+
+---
+
+### 2026-08-03 — Rung 6a
+- **Decisions:** **Explicit forwarding via an `asyncHandler` HOF (`.catch(next)`), not Express 5's
+  auto-forward** — user's call, and the interview-relevant one: leaning on the framework silently
+  catching rejections hides the `next(err)` mechanism an interviewer probes. The wrapper is the
+  version-agnostic production pattern (it's what `express-async-handler` is). Deliberate errors use a
+  tiny `AppError(statusCode, message)` class so 404s/PUT-400 flow through the *same* central handler as
+  DB errors (`http-errors` named as the packaged equivalent). **Express 4-vs-5 async comparison dropped
+  entirely** (removed from PLAN + Deferred) — user considers it exam trivia; we teach one canonical way.
+- **Process:** concept pass re-planned twice on user pushback — first over-compressed (cut interview
+  substance, not just walls), then corrected the auto-forward-vs-explicit framing. Depth calibration:
+  "don't go too deep" ≠ "drop what interviews ask."
 - **Process / context:**
 
 ---
