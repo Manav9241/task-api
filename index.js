@@ -12,7 +12,8 @@ const taskSchema = new mongoose.Schema(
         title: {
             type: String,
             required: true,
-            trim: true
+            trim: true,
+            maxlength: 200
         },
         completed: {
             type: Boolean,
@@ -24,123 +25,86 @@ const taskSchema = new mongoose.Schema(
 
 const Task = mongoose.model("Task", taskSchema);
 
+const asyncHandler = (fn) => (req, res, next) =>
+    Promise.resolve(fn(req, res, next)).catch(next);
+
+class AppError extends Error {
+    constructor(statusCode, message) {
+        super(message);
+        this.statusCode = statusCode;
+    }
+}
+
 app.get("/", (req, res) => {
     res.send("Server is running");
 });
 
-app.get("/tasks", async (req, res) => {
-    try {
-        const tasks = await Task.find();
-        res.json(tasks);
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ message: "Server Error" });
+app.get("/tasks", asyncHandler(async (req, res) => {
+    const tasks = await Task.find();
+    res.json(tasks);
+}));
+
+app.get("/tasks/:id", asyncHandler(async (req, res) => {
+    const task = await Task.findById(req.params.id);
+    if (!task) throw new AppError(404, "Task not found");
+    res.json(task);
+}));
+
+app.post("/tasks", asyncHandler(async (req, res) => {
+    const { title, completed } = req.body ?? {};
+    const task = await Task.create({ title, completed: completed ?? false });
+    res.status(201).json(task);
+}));
+
+app.put("/tasks/:id", asyncHandler(async (req, res) => {
+    const { title, completed } = req.body ?? {};
+
+    if (title === undefined) throw new AppError(400, "Title is required");
+
+    const task = await Task.findByIdAndUpdate(
+        req.params.id,
+        { title, completed: completed ?? false },
+        { new: true, runValidators: true }
+    );
+    
+    if (!task) throw new AppError(404, "Task not found");
+    res.json(task);
+}));
+
+app.patch("/tasks/:id", asyncHandler(async(req, res) => {
+    const { title, completed } = req.body ?? {};
+    const update = {};
+    if (title !== undefined) update.title = title;
+    if (completed !== undefined) update.completed = completed;
+
+    const task = await Task.findByIdAndUpdate(
+        req.params.id,
+        update,
+        { new: true, runValidators: true }
+    );
+
+    if (!task) throw new AppError(404, "Task not found");
+    res.json(task);
+}));
+
+app.delete("/tasks/:id", asyncHandler(async (req, res) => {
+    const task = await Task.findByIdAndDelete(req.params.id);
+    if (!task) throw new AppError(404, "Task not found");
+    res.status(204).send();
+}));
+
+app.use((err, req, res, next) => {
+    if (err.statusCode) {
+        return res.status(err.statusCode).json({ message: err.message });
     }
-});
-
-app.get("/tasks/:id", async (req, res) => {
-    try {
-        const task = await Task.findById(req.params.id);
-        if (!task) {
-            return res.status(404).json({ message: "Task not found" });
-        }
-        res.json(task);
-    }catch (err) {
-        if (err.name === "CastError") {
-            return res.status(400).json({ message: "Invalid Task ID" });
-        }
-        console.error(err);
-        res.status(500).json({ message: "Server Error" });
+    if (err.name === "CastError") {
+        return res.status(400).json({ message: "Invalid Task Id" });
     }
-});
-
-app.post("/tasks", async (req, res) => {
-    try {
-        const { title, completed } = req.body ?? {};
-        const task = await Task.create({ title, completed: completed ?? false });
-        res.status(201).json(task);
-    } catch (err) {
-        if (err.name === "ValidationError") {
-            return res.status(400).json({ message: err.message });
-        }
-        console.error(err);
-        res.status(500).json({ message: "Server Error" });
+    if (err.name === "ValidationError") {
+        return res.status(400).json({ message: err.message });
     }
-});
-
-app.put("/tasks/:id", async (req, res) => {
-    try {
-        const { title, completed } = req.body ?? {};
-
-        if (title === undefined) {
-            return res.status(400).json({ message: "Title is required" });
-        }
-
-        const task = await Task.findByIdAndUpdate(
-            req.params.id,
-            { title, completed: completed ?? false },
-            { new: true, runValidators: true }
-        );
-        
-        if (!task) {
-            return res.status(404).json({ message: "Task not found" });
-        }
-        res.json(task);
-    } catch (err) {
-        if (err.name === "CastError") {
-            return res.status(400).json({ message: "Invalid Task ID" });
-        }
-        if (err.name === "ValidationError") {
-            return res.status(400).json({ message: err.message });
-        }
-        console.error(err);
-        res.status(500).json({ message: "Server Error" });
-    }
-});
-
-app.patch("/tasks/:id", async(req, res) => {
-    try {
-        const { title, completed } = req.body ?? {};
-        const update = {};
-        if (title !== undefined) update.title = title;
-        if (completed !== undefined) update.completed = completed;
-
-        const task = await Task.findByIdAndUpdate(
-            req.params.id,
-            update,
-            { new: true, runValidators: true }
-        );
-
-        if (!task) {
-            return res.status(404).json({ message: "Task not found" });
-        }
-        res.json(task);
-    } catch (err) {
-        if (err.name === "CastError") {
-            return res.status(400).json({ message: "Invalid Task ID" });
-        }
-        if (err.name === "ValidationError") {
-            return res.status(400).json({ message: err.message });
-        }
-        console.error(err);
-        res.status(500).json({ message: "Server Error" });
-    }
-});
-
-app.delete("/tasks/:id", async (req, res) => {
-    try {
-        const task = await Task.findByIdAndDelete(req.params.id);
-        if (!task) {
-            return res.status(404).json({ message: "Task not found" });
-        }
-        res.status(204).send();
-    } catch (err) {
-        if (err.name === "CastError") {
-            return res.status(400).json({ message: "Invalid Task ID" });
-        }
-        console.error(err);
-        res.status(500).json({ message: "Server Error" });
-    }
+    console.error(err);
+    res.status(500).json({ message: "Server Error" });
 });
 
 async function connectDB() {

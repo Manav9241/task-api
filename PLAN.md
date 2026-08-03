@@ -126,9 +126,10 @@ seam: **make it robust (6a) → make it structured (6b)** — 6b's file-split mu
 
 #### Rung 6a — Centralized error handling
 - **Concept — Express error-handling middleware:** the 4-arg `(err, req, res, next)`
-  signature, how Express recognises it and routes errors to it, `next(err)`, and the
-  **Express 4-vs-5 async difference** (v5 auto-forwards a rejected promise from an async
-  handler to the error handler; v4 does not) — owed from 5b.
+  signature, how Express recognises it (by arity) and routes errors to it, and `next(err)` as
+  the **explicit** forwarding mechanism. Remove the per-route `try/catch` with a small
+  `asyncHandler` wrapper that does `.catch(next)` — the standard, version-agnostic production
+  pattern. *We forward errors explicitly; we do not lean on framework auto-forwarding.*
 - Collapse the per-route `try/catch` ladders (`CastError`/`ValidationError`/generic-500,
   currently repeated in all six routes) into **one** error handler that maps error → status
   code in a single place. Reinforce **bad user input = 4xx, never 5xx**.
