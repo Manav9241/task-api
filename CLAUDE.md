@@ -30,6 +30,10 @@ every session on this project.
    what we build*, not *what we build* — scope is still minimal-on-purpose (see PLAN's
    *Deliberately NOT doing*). When we do defer the fuller form, say so at the point of use and
    why.
+   **When several idiomatic forms exist, choose deliberately and say why — never hand over a silent
+   default.** If a cleaner or more common form fits (e.g. `router.route()` chaining vs flat
+   `router.get`/`router.post`), surface it with the trade-off rather than reaching for the first that
+   comes to mind. "Did you consider both, or just skip it?" should already be answered in what I give.
 3. **Never start without an explicit "go."** I wait for the user to say start before doing
    anything, at every step and every rung.
 4. **Each rung starts with a brief, then the full topic list for that rung — I compile it,
@@ -42,6 +46,10 @@ every session on this project.
    the user hasn't been shown yet (this has recurred: `try/catch`, `throw`). Assumed prior
    fluency sets the *pace only*; it never licenses referencing an untaught concept. If it isn't
    yet introduced, introduce it or rephrase without it.
+   **And no *backward*-references either — explanations must be self-contained.** Never cite earlier
+   material by its position ("recall from Beat 2", "as in Rung 5c", "the golden rule from Rung 4"):
+   state the fact directly where it's needed. This has recurred across sessions despite being
+   flagged, so treat it as a hard rule, not a stylistic nicety.
    **A topic list the user hands me is *scope* (what to cover), not teaching *sequence*.** Derive
    the sequence myself: simulate each explanation before teaching it, write down what every step
    leans on, and confirm each dependency is already covered. That dependency pass — not the order
@@ -67,6 +75,12 @@ every session on this project.
    **Test:** if the user has to push back to reach the part that actually matters, the
    refresher was too shallow. If they're wading through trade-off analysis of a one-liner,
    it was too deep.
+
+   **When asked to trim, simplify, or "not go too deep", cut length and manufactured trade-offs —
+   never the interview-relevant substance.** "Shorter" means fewer words around the same core, not
+   dropping the decision / trap / *why* an interviewer actually probes. When unsure which is meant,
+   keep the substance and tighten the prose; let the user cut further if they want. (Recurred: an
+   instruction to compress got read as license to drop the interview-critical part.)
 6. **Pause and list before implementing.** Don't rush ahead; lay out what needs to happen first.
    **Sequencing and logistics are mine too** — account signups, installs, prerequisites: I
    decide *where in the flow* each one goes, and then just drive it. Never offer the user a
