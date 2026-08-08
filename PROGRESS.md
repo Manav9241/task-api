@@ -22,17 +22,19 @@ deliberate errors `throw new AppError(statusCode, msg)`; **one** `(err, req, res
 is now thin composition (config → `express.json()` → mount router → error handler last → connect+listen).
 No service layer (2-field CRUD doesn't warrant one). **Behaviour byte-identical to 6a** — verified across
 all 13 GET/POST/PUT/PATCH/DELETE cases against the live DB. Revision notes: `javascript-async.md`, `mongoose.md`.
-⏭ **Core roadmap done.** Remaining items are **Later / optional** (see PLAN): pagination/filter/sort on
-`GET /tasks`, then Auth (JWT) as the bridge to an intermediate "Blog API". Nothing is *owed* — next rung
-is the user's pick.
+⏭ **Rung 7 next — query the collection** (`GET /tasks`): **7a** filtering + sorting, then **7b**
+pagination, REST-style (query params → Mongoose). Real DB querying with real traps (unbounded result
+sets, query-param/NoSQL injection, offset-pagination pitfalls) — split 7a/7b, see PLAN. **task-api
+completes after Rung 7.** Auth (JWT) is deliberately the **next project** (a multi-user "Blog API"),
+not a rung here. GraphQL parked in `FUTURE-LEARNING.md` (a separate API paradigm, not this rung).
 
 ## Deferred concepts (owed later)
 > **The action list.** Each item: what's owed + **when it's due**. Keep terse — full teaching
 > detail belongs in its own section, and generic technical facts are re-derivable. Remove once
 > paid. **Test:** if it requires someone to DO something later, it belongs here — not the log.
 
-- **Pagination/filter/sort is DB *querying*, not a light add-on** → if/when tackled (Later/optional).
-  It's `sort`/`skip`/`limit` + query operators — heavier than the one-liner it reads as.
+_(none — the pagination "it's real DB querying, not a light add-on" warning is now baked into PLAN's
+Rung 7, split 7a/7b, so it's roadmap rather than a loose deferred item.)_
 
 ---
 
@@ -47,7 +49,19 @@ is the user's pick.
 
 ---
 
-### 2026-08-03 — Rung 6a
+### 2026-08-08 — Rung 7 planning (this PR)
+- **Decisions:** **Pagination/filter/sort promoted to a real Rung 7, split 7a (filter+sort) / 7b
+  (pagination)** — it's DB querying with real traps, not a one-liner; the old *Deferred* warning to that
+  effect is now baked into PLAN. **REST-style, not GraphQL:** the user asked whether GraphQL fits —
+  clarified it's an *API* query language (single endpoint, client-picks-fields, resolvers still calling
+  Mongoose underneath), **not** a DB query tool; adopting it would swap the whole API paradigm, so it's
+  parked in FUTURE-LEARNING as its own project, not this rung. **Auth stays out of task-api** — a
+  single-user task toy is the wrong home for multi-user auth; it seeds the **next project (Blog API)**.
+  task-api is declared **complete after Rung 7**.
+- **Process:** bundled with the CLAUDE.md teaching-correction sharpenings into one docs PR (per the
+  roadmap-changes-get-their-own-PR rule), rather than folding into a rung.
+
+### 2026-08-08 — Rung 6a
 - **Decisions:** **Explicit forwarding via an `asyncHandler` HOF (`.catch(next)`), not Express 5's
   auto-forward** — user's call, and the interview-relevant one: leaning on the framework silently
   catching rejections hides the `next(err)` mechanism an interviewer probes. The wrapper is the
@@ -61,7 +75,7 @@ is the user's pick.
 
 ---
 
-### 2026-08-03 — Rung 6b
+### 2026-08-08 — Rung 6b
 - **Decisions:** **`router.route()` chaining** over flat `router.get/post` — both our paths are
   multi-method, so grouping by path (write the path once) is the cleaner, idiomatic fit; I'd defaulted
   to the flat form and the user caught the better option. **`AppError` lives in `utils/`, not

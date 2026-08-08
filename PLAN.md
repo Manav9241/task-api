@@ -154,9 +154,49 @@ seam: **make it robust (6a) → make it structured (6b)** — 6b's file-split mu
 - ~~Environment variables (`.env`)~~ — **pulled forward to Rung 5a**: the rung ends in a
   commit, so an inline connection string would put a live Atlas password in git history.
 
-### Later / optional
-- Pagination, filtering, sorting on `GET /tasks`
-- Auth (JWT) — the bridge to an intermediate "Blog API"
+### Rung 7 — Query the collection: filtering, sorting, pagination (split: 7a + 7b)
+*The last feature rung — `GET /tasks` graduates from "return everything" to real DB querying. Split
+two ways because this is genuinely **DB querying**, not a light add-on (`find(filter)` + `sort` +
+`skip`/`limit` + a count), and it carries real interview traps (unbounded result sets, injection via
+query params, offset-pagination pitfalls). The seam: **shape the result set (7a) → page through it
+(7b)**. Each sub-rung is a full rung (own branch, commit, PR). **REST-style throughout** — query
+params → Mongoose. GraphQL is a different API paradigm (client-driven queries over a single endpoint,
+resolvers still calling Mongoose underneath), parked as a future project — not used here.*
+
+#### Rung 7a — Filtering + sorting
+- **Concepts — query params:** `req.query` (values are always **strings** — `?completed=true` is the
+  string `"true"`, needs coercion); how query params (`?k=v`, optional, for filtering/sorting) differ
+  from route params (`/:id`, identifying one resource).
+- **Concepts — filtering safely:** build the Mongoose filter from an **allowlist** of filterable keys
+  only — never pass `req.query` straight into `find()` (same mass-assignment/injection reflex as the
+  write-routes); `find(filter)` equality first, then a note on operator filtering (`$gte`/`$in`/regex)
+  and why unfiltered user-supplied operators are a **NoSQL-injection** risk.
+- **Concepts — sorting:** `.sort("-createdAt")` / `{ createdAt: -1 }`; allowlist sortable fields, set a
+  sensible default sort, ascending vs descending.
+- **Success = `GET /tasks?completed=true&sort=-createdAt` returns only matching tasks, ordered, with
+  unknown filter/sort keys ignored (not trusted).**
+
+#### Rung 7b — Pagination
+- **Concepts — offset pagination:** `?page=&limit=` → `.skip((page-1)*limit).limit(limit)`; sensible
+  defaults **and a max limit** (never serve unbounded rows); coerce/validate the numbers (bad `page` →
+  clamp or 400).
+- **Concepts — total count + response envelope:** `Task.countDocuments(filter)` for the total; return
+  metadata (`total`, `page`, `limit`, `totalPages`, `hasNext`) alongside the data instead of a bare
+  array — a deliberate **response-shape change** clients depend on.
+- **Concepts — offset vs cursor (interview beat):** why `skip` degrades at scale (it still scans
+  skipped rows; rows shifting mid-paging cause dupes/skips) and what **cursor/keyset** pagination does
+  instead (`_id`/`createdAt` as the cursor) — concept + when to reach for it; offset is fine here.
+- **Concepts — indexing (light):** why the sorted/filtered fields want an index once data grows
+  (concept only; ties to the aggregation/indexing future-project idea).
+- **Success = `GET /tasks?page=2&limit=10` returns page 2 with correct paging metadata, a capped max
+  limit, and stable ordering. task-api is then considered complete.**
+
+### Later / optional / next project
+- ~~Pagination, filtering, sorting on `GET /tasks`~~ — **promoted to Rung 7** (real DB querying, 7a/7b).
+- **Auth (JWT) → its own next project, a "Blog API".** Deliberately **not** a task-api rung: a
+  single-user task toy is the wrong home for real multi-user auth. The Blog API is where it's natural —
+  `User` model, register/login, **bcrypt** password hashing, JWT issue/verify, route protection
+  (authn vs authz), and resource ownership/relationships. task-api is **complete after Rung 7**.
 
 ## Tech choices (minimal on purpose)
 - Node.js + Express; `mongoose` + `dotenv` installed Rung 5a; `dotenv` used 5a, Mongoose 5b+
