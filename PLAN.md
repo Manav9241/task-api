@@ -169,12 +169,23 @@ resolvers still calling Mongoose underneath), parked as a future project — not
   from route params (`/:id`, identifying one resource).
 - **Concepts — filtering safely:** build the Mongoose filter from an **allowlist** of filterable keys
   only — never pass `req.query` straight into `find()` (same mass-assignment/injection reflex as the
-  write-routes); `find(filter)` equality first, then a note on operator filtering (`$gte`/`$in`/regex)
-  and why unfiltered user-supplied operators are a **NoSQL-injection** risk.
+  write-routes); `find(filter)` equality matching, and why user-supplied **operators** are a
+  **NoSQL-injection** risk (`?completed[$ne]=x` arrives as an object, not a string).
+- **Concepts — searching `title` (text, not equality):** exact-match on a title is useless, so search
+  needs `$regex` — which means **user text is compiled into a regular expression**. Covers: escaping the
+  user's input (`.`/`*` otherwise change the query's meaning), **ReDoS** from a crafted pattern,
+  case-insensitivity (`$options: "i"`), and prefix (`^Topic`, index-usable) vs substring (full scan).
+  *Two filter fields on purpose* — a lone boolean is self-validating, so the allowlist lesson only bites
+  once a free-text field is in play.
 - **Concepts — sorting:** `.sort("-createdAt")` / `{ createdAt: -1 }`; allowlist sortable fields, set a
   sensible default sort, ascending vs descending.
-- **Success = `GET /tasks?completed=true&sort=-createdAt` returns only matching tasks, ordered, with
-  unknown filter/sort keys ignored (not trusted).**
+- **Not doing: date-range filters** (`?createdAfter=` → `{ $gte: date }`). The safe-operator pattern
+  (*our* code picks the operator, user input only fills the value) is taught above; implementing it here
+  would add date parsing/validation, which is plumbing, not new insight — and 7b already drills
+  string→number coercion and clamping.
+- **Success = `GET /tasks?completed=true&title=topic&sort=-createdAt` returns only matching tasks,
+  ordered, with unknown filter/sort keys ignored (not trusted) and regex metacharacters in `title`
+  treated as literal text.**
 
 #### Rung 7b — Pagination
 - **Concepts — offset pagination:** `?page=&limit=` → `.skip((page-1)*limit).limit(limit)`; sensible
@@ -193,10 +204,12 @@ resolvers still calling Mongoose underneath), parked as a future project — not
 
 ### Later / optional / next project
 - ~~Pagination, filtering, sorting on `GET /tasks`~~ — **promoted to Rung 7** (real DB querying, 7a/7b).
-- **Auth (JWT) → its own next project, a "Blog API".** Deliberately **not** a task-api rung: a
-  single-user task toy is the wrong home for real multi-user auth. The Blog API is where it's natural —
-  `User` model, register/login, **bcrypt** password hashing, JWT issue/verify, route protection
-  (authn vs authz), and resource ownership/relationships. task-api is **complete after Rung 7**.
+- **Auth (JWT) — out of scope for task-api.** Deliberately **not** a rung: a single-user task toy is the
+  wrong home for real multi-user auth (`User` model, register/login, **bcrypt** hashing, JWT
+  issue/verify, route protection — authn vs authz — and resource ownership). It needs a project that
+  actually has multiple users.
+- ~~"Blog API" as the next project~~ — **dropped** (user's call). task-api is **complete after Rung 7**;
+  what follows it is decided separately and is not planned here.
 
 ## Tech choices (minimal on purpose)
 - Node.js + Express; `mongoose` + `dotenv` installed Rung 5a; `dotenv` used 5a, Mongoose 5b+

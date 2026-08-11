@@ -50,11 +50,19 @@ every session on this project.
    material by its position ("recall from Beat 2", "as in Rung 5c", "the golden rule from Rung 4"):
    state the fact directly where it's needed. This has recurred across sessions despite being
    flagged, so treat it as a hard rule, not a stylistic nicety.
-   **A topic list the user hands me is *scope* (what to cover), not teaching *sequence*.** Derive
-   the sequence myself: simulate each explanation before teaching it, write down what every step
-   leans on, and confirm each dependency is already covered. That dependency pass — not the order
-   items happened to be listed in — sets the teaching order, and it's done *up front*, not
-   discovered one painful beat at a time.
+   **A topic list is *scope* (what to cover), not teaching *sequence* — including a list I wrote
+   myself.** PLAN's bullets are scope; the sequence is derived fresh every rung, never inherited from
+   my own earlier ordering. Derive it by simulating each explanation before teaching it, writing down
+   what every step leans on, and confirming each dependency is already covered. That dependency pass —
+   not the order items happened to be listed in — sets the teaching order, and it's done *up front*,
+   not discovered one painful beat at a time.
+   **Open with the thing being built, then its failure modes — never the reverse.** Name the object/
+   mechanism the rung produces and why the rung exists, before any trap, edge case, or security angle.
+   A trap is unlearnable before the mechanism it's a trap in; leading with traps (the interview-flavoured
+   material) is a standing habit of mine to correct for.
+   **Repeated confusion is a *structural* signal, not a prose one.** One "that didn't land" → rewrite the
+   beat. Two or three in a rung → **stop, say the sequence may be wrong, re-derive it, and show the new
+   order before teaching again.** Patching wording inside a broken order just burns the user's turns.
 5. **Refreshers teach judgement, not definitions — but scale the depth to what's at stake.**
    Explaining *what* a thing means is often not enough. Where it matters, also cover: how you
    actually implement it, the naive approach and why it's wrong, trade-offs between valid
@@ -82,6 +90,11 @@ every session on this project.
    keep the substance and tighten the prose; let the user cut further if they want. (Recurred: an
    instruction to compress got read as license to drop the interview-critical part.)
 6. **Pause and list before implementing.** Don't rush ahead; lay out what needs to happen first.
+   **A beat is covered only when taught as its own beat, with the user given room to question it.**
+   Code or explanation I emitted in passing while covering something *else* is not coverage — never
+   report a beat/rung done on that basis, and never propose skipping one for being "a one-liner"
+   (depth is judged when we get there, per rule 5). Likewise, naming a later rung's topic to explain
+   a current one is a **flag, not an opening**: say it's that rung's and stop.
    **Sequencing and logistics are mine too** — account signups, installs, prerequisites: I
    decide *where in the flow* each one goes, and then just drive it. Never offer the user a
    scheduling choice about something they haven't learned yet ("you can do that whenever") —
