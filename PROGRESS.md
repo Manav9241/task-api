@@ -8,7 +8,7 @@
 >   (CLAUDE.md rule 9).
 
 ## Status
-✅ **Rungs 0–4, 5a, 5b, 5c, 6a, 6b done — the full planned ladder is complete.** Atlas M0 cluster;
+✅ **Rungs 0–4, 5a, 5b, 5c, 6a, 6b, 7a done.** Atlas M0 cluster;
 connection string in a git-ignored `.env`; `mongoose` + `dotenv` installed. All six routes run on
 **Mongoose** (`find`/`findById`/`create`/`findByIdAndUpdate`/`findByIdAndDelete`); `id`→`_id`
 (ObjectId); write-routes **allowlist `req.body`** (destructure), never spread; `title` has
@@ -22,10 +22,16 @@ deliberate errors `throw new AppError(statusCode, msg)`; **one** `(err, req, res
 is now thin composition (config → `express.json()` → mount router → error handler last → connect+listen).
 No service layer (2-field CRUD doesn't warrant one). **Behaviour byte-identical to 6a** — verified across
 all 13 GET/POST/PUT/PATCH/DELETE cases against the live DB. Revision notes: `javascript-async.md`, `mongoose.md`.
-⏭ **Rung 7 next — query the collection** (`GET /tasks`): **7a** filtering + sorting, then **7b**
-pagination, REST-style (query params → Mongoose). Real DB querying with real traps (unbounded result
-sets, query-param/NoSQL injection, offset-pagination pitfalls) — split 7a/7b, see PLAN. **task-api
-completes after Rung 7.** Auth (JWT) stays **out of scope** — the wrong fit for a single-user toy — and
+**7a landed:** `GET /tasks` takes `?completed=`, `?title=`, `?sort=`. `filter` is built key-by-key (never
+`find(req.query)`); `completed` compared as text (`=== "true"`/`"false"`, never `Boolean()`); `title` is
+`{ $regex: escapeRegex(t), $options: "i" }` — contains, case-insensitive, **user text escaped to literal**;
+`sort` validated against a module-level `SORTABLE_FIELDS` allowlist with `-` stripped, defaulting to
+`-createdAt`. `typeof x === "string"` guards on `title`/`sort` are load-bearing — they're what stops an
+operator object (`?sort[$ne]=`) reaching `.sort()` and 500ing. Invalid values are **ignored, not 4xx**.
+Verified live: 21 cases incl. injection attempts, all correct.
+⏭ **Rung 7b next — pagination** (`?page=`/`?limit=`): `skip`/`limit`, defaults **and a max limit**,
+`countDocuments` + a response envelope (a deliberate shape change from the bare array), offset-vs-cursor,
+light indexing. **task-api completes after Rung 7.** Auth (JWT) stays **out of scope** — the wrong fit for a single-user toy — and
 the "Blog API next project" idea is **dropped**; what follows task-api is decided separately, not
 planned here. GraphQL parked in `FUTURE-LEARNING.md` (a separate API paradigm, not this rung).
 
@@ -61,31 +67,6 @@ into PLAN's Rung 7 split, so it's roadmap, not a loose item.)_
 
 ---
 
-## Lesson plan — Rung 7a (delete when the rung closes)
-> Re-derived after a failed first attempt that taught `req.query` and its traps *before* ever saying what
-> a filter object is. Shape: **mechanism (1–3) → input (4–5) → safety (6–7) → assembly (8).**
-> Filters: `completed` **and `title`** (see PLAN — a lone boolean is self-validating, so the safety steps
-> only bite once free text is in play). No date ranges.
-
-1. **The destination.** The skeleton `const filter = {}` / `let sort = "-createdAt"` / `Task.find(filter).sort(sort)`
-   — the rung is entirely about building those two values from the URL. Anchor first, no traps.
-2. **`find(filter)` semantics.** Equality matching; `{}` = everything; multiple keys = AND; why `title`
-   *can't* use equality; the operator *shape* (`{ field: { $op: … } }`) introduced here so 6–7 aren't cold.
-3. **`.sort()` semantics.** `"-createdAt"` vs `{ createdAt: -1 }`; multiple fields; why a default order is
-   needed at all (unsorted = arbitrary order, not insertion order).
-4. **`req.query`.** URL → object; always `{}` not `undefined`; query params vs route params.
-5. **Query value → usable value.** All strings ⇒ compare to text, never `Boolean()`/`!!`/ternary; build the
-   filter conditionally (no key without a real value; stray `undefined` in a filter).
-6. **Allowlists + operator injection.** `find(req.query)` and raw `sort` are holes; `?completed[$ne]=x`
-   arrives as an object; allowlist keys *and* values, allowlist sortable fields. Same reflex as the
-   `req.body` destructuring already in the write-routes.
-7. **Regex injection (`title`).** User text compiled into a regex: escape metacharacters, `$options: "i"`,
-   prefix `^` (index-usable) vs substring (full scan), ReDoS from a crafted pattern.
-8. **Assembly.** Chaining + laziness (a `Query` is built, DB hit on `await`); controller-inline vs helper;
-   then write and test it.
-
----
-
 ## Session log
 > **History/reference only — no action items** (those go in *Deferred concepts* above).
 > Log **only what git/PLAN/code don't already capture** — decisions (+ why), shaky spots,
@@ -96,6 +77,29 @@ into PLAN's Rung 7 split, so it's roadmap, not a loose item.)_
 - **Decisions:** _(what we chose and why — no action items)_
 
 ---
+
+### 2026-08-12 — Rung 7a
+- **Decisions:** **`title` search added to the rung** (it was scoped as `completed`-only) — a lone boolean
+  is self-validating, so the allowlist/injection material never bites; free text is where the real decisions
+  are. **Regex `contains`, not prefix-anchored `^`** — a search that only matches from the first character
+  is useless at this size, and `$options: "i"` defeats a plain index even when anchored, so the
+  index argument for `^` doesn't hold without a collation index either. **Invalid filter/sort values are
+  ignored, not 4xx** — a filter is an optional refinement, and erroring on `?completed=banana` while
+  shrugging at `?sort=nonsense` would be arbitrary. **Single-field sort only** — multi-field would mean
+  splitting on spaces and validating each part, for no gain here. **No date-range filters** (`$gte`): the
+  safe-operator rule is taught, but implementing it is date-parsing plumbing.
+- **Gotcha worth keeping:** the `typeof x === "string"` guards are **security controls, not tidiness**.
+  Without them `requestedSort.startsWith(...)` on an operator object throws a `TypeError` → unrecognised
+  by the error handler → **500 from user input**. Mongoose also does *not* validate a `$regex` pattern —
+  `?title=[` is forwarded verbatim and MongoDB rejects it, so escaping is what prevents that 500 too.
+- **Process — the teaching order failed badly.** I taught `req.query` and its traps across four beats
+  before ever stating what a `filter` object *is*, so every trap landed as disconnected trivia; the user
+  was lost for ~6 exchanges while I patched wording instead of questioning the sequence. Root cause: I
+  inherited my own PLAN bullet order as a lesson plan rather than re-deriving it. Fixed by replanning
+  mid-rung into its own docs PR, and encoding it in rules 4/6 (mechanism before traps; repeated confusion
+  = structural signal; a topic list is scope, not sequence — including one I wrote).
+- **Verification:** I ran the 21-case suite myself against the live DB (filters, sort, escaping, injection
+  attempts), self-cleaning the test documents.
 
 ### 2026-08-08 — Rung 7 planning (this PR)
 - **Decisions:** **Pagination/filter/sort promoted to a real Rung 7, split 7a (filter+sort) / 7b

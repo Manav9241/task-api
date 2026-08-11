@@ -2,8 +2,33 @@ const asyncHandler = require("../middleware/asyncHandler");
 const Task = require("../models/task");
 const AppError = require("../utils/AppError");
 
+const SORTABLE_FIELDS = ["createdAt", "updatedAt", "title", "completed"];
+
+const escapeRegex = (str) => str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
 exports.getAllTasks = asyncHandler(async(req, res) => {
-    const tasks = await Task.find();
+    const filter = {};
+
+    if (req.query.completed === "true") filter.completed = true;
+    if (req.query.completed === "false") filter.completed = false;
+
+    const title = req.query.title;
+    if (typeof title === "string" && title.trim() !== "") {
+        filter.title = { $regex: escapeRegex(title.trim()), $options: "i" };
+    }
+
+    let sort = "-createdAt";
+    const requestedSort = req.query.sort;
+
+    if (typeof requestedSort === "string") {
+        const field = requestedSort.startsWith("-")
+            ? requestedSort.slice(1)
+            : requestedSort;
+
+        if (SORTABLE_FIELDS.includes(field)) sort = requestedSort;
+    }
+
+    const tasks = await Task.find(filter).sort(sort);
     res.json(tasks);
 });
 
