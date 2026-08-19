@@ -5,7 +5,7 @@
 > - **Deferred concepts** — the **action list**: what's owed, each with a due rung/trigger.
 >   **Terse** — detail is re-derivable. Consumed at rung start.
 > - **Session log** — history/reference only; drives nothing. Never put an action item here
->   (CLAUDE.md rule 9).
+>   (the workspace filing test).
 
 ## Status
 ✅ **Rungs 0–4, 5a, 5b, 5c, 6a, 6b, 7a done.** Atlas M0 cluster;
@@ -40,27 +40,8 @@ planned here. GraphQL parked in `FUTURE-LEARNING.md` (a separate API paradigm, n
 > detail belongs in its own section, and generic technical facts are re-derivable. Remove once
 > paid. **Test:** if it requires someone to DO something later, it belongs here — not the log.
 
-- **Restructure the system files to deal with bloat.** **Due: after Rung 7a closes**, as its own docs
-  branch → PR (not folded into a rung). CLAUDE.md accretes because every recurring miss adds a
-  sharpening clause and nothing triggers pruning. Worst overlap: the **depth/brevity axis is stated in
-  five places** across rule 5 + Calibration (~45 lines, one idea, split over two sections) — consolidate
-  to one section. Consider structural fixes beyond editing: splitting teaching-style rules out of
-  CLAUDE.md into their own file, or moving them into a **skill / dedicated agent** loaded on demand, so
-  the always-on context stays lean (the `revision-notes/index.md` and FUTURE-LEARNING pattern — details
-  live in the file that needs them — applied to the rules themselves). **Restructure *toward* the
-  portable shape below** — i.e. split generic-teaching-system from task-api-specific as part of this
-  pass — so the export at project close is a move, not a second rewrite.
-
-- **Make the system portable to future projects.** **Due: at task-api close (after Rung 7b),** before
-  whatever project comes next. Today the whole system is bound to this project: `CLAUDE.md` lives in
-  `task-api/`, and the memories live in a **per-project path**
-  (`~/.claude/projects/E--Prepare-Interviews-05-.../memory/`) that will not auto-load for a different
-  project. The rules are also a mix of **generic** (how to teach, rung/branch/PR rituals, depth
-  calibration) and **task-api-specific** (this ladder, this stack) — the generic part is what must
-  travel. Work needed: separate the two; collect the durable preferences currently spread across
-  `CLAUDE.md` + `memory/*` into one exportable set; then pick a delivery mechanism — global
-  `~/.claude/CLAUDE.md`, a **skill**, a **dedicated agent**, or a plugin — and verify it actually loads
-  in a fresh project before relying on it.
+_**Empty.** All three items — system bloat, the ritual's ordering bug, and portability — were paid by
+the system restructure; the rationale for each moved to the log entry below, per the clearing rule._
 
 _(The pagination "it's real DB querying, not a light add-on" warning is not listed here — it's baked
 into PLAN's Rung 7 split, so it's roadmap, not a loose item.)_
@@ -77,6 +58,21 @@ into PLAN's Rung 7 split, so it's roadmap, not a loose item.)_
 - **Decisions:** _(what we chose and why — no action items)_
 
 ---
+
+### 2026-08-19 — System restructure (this PR — system work, not a rung)
+- **All three Deferred items cleared; why each counts as paid.** *Bloat:* the 283-line `CLAUDE.md` is
+  gone from this repo — its rules were sorted into three always-loaded tiers (machine-wide · workspace ·
+  a per-project layer) plus five on-demand skills, so the standing context now carries contracts and
+  triggers rather than teaching prose. *Ritual ordering:* fixed **structurally, not reworded** — the
+  close ritual now puts every step that can edit a tracked file **before** the commit, which is precisely
+  what stranded 7a's README edit. *Portability:* rules and memory no longer live under this project, so
+  the next project inherits them instead of needing an export at close.
+- **This project no longer keeps a working-rules file.** `PLAN.md` and `README.md` were re-pointed; the
+  collaboration agreement is not a project artifact any more. The rung/ladder metaphor stays task-api's
+  own — generic system text says "unit" and translates on write.
+- **Old rule numbers in the entries below were deliberately left alone.** They were true when written,
+  and rewriting history to point at new homes would falsify the record. Only *live* guidance was
+  re-pointed.
 
 ### 2026-08-12 — Rung 7a
 - **Decisions:** **`title` search added to the rung** (it was scoped as `completed`-only) — a lone boolean
@@ -100,6 +96,8 @@ into PLAN's Rung 7 split, so it's roadmap, not a loose item.)_
   = structural signal; a topic list is scope, not sequence — including one I wrote).
 - **Verification:** I ran the 21-case suite myself against the live DB (filters, sort, escaping, injection
   attempts), self-cleaning the test documents.
+- **Miss:** README's endpoint row was updated *after* the PR merged, leaving an uncommitted edit stranded
+  on `main`. Caused by the ritual's own step order, not a one-off slip — tracked as a Deferred item.
 
 ### 2026-08-08 — Rung 7 planning (this PR)
 - **Decisions:** **Pagination/filter/sort promoted to a real Rung 7, split 7a (filter+sort) / 7b
