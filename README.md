@@ -12,7 +12,7 @@ well-understood step at a time, rather than shipping a product.
 - **MongoDB** + **Mongoose** — database & modelling (added partway through)
 
 ## Status
-🚧 In progress — a learning project, built rung by rung.
+🚧 In progress — a learning project, built step by step.
 See [PLAN.md](PLAN.md) for the roadmap and [PROGRESS.md](PROGRESS.md) for exactly where we are.
 
 ## What the API will do
@@ -66,5 +66,5 @@ Non-GET requests (POST/PUT/DELETE) can't be sent from the browser's address bar 
 
 ## Project files
 - [`README.md`](README.md) — this file: what the project is and how to run it
-- [`PLAN.md`](PLAN.md) — the rung-by-rung build roadmap
+- [`PLAN.md`](PLAN.md) — the step-by-step build roadmap
 - [`PROGRESS.md`](PROGRESS.md) — where we are, plus what's owed later

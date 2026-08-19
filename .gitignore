@@ -1,7 +1,7 @@
 # Dependencies
 node_modules/
 
-# Environment variables (DB connection strings / secrets — used from Rung 5a)
+# Environment variables (DB connection strings / secrets — used from Step 5a)
 .env
 
 # OS junk files
