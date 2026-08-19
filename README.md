@@ -20,7 +20,7 @@ Manage a list of tasks over HTTP:
 
 | Method | Endpoint      | Purpose            |
 |--------|---------------|--------------------|
-| GET    | `/tasks`      | List all tasks     |
+| GET    | `/tasks`      | List tasks — supports `?completed=`, `?title=`, `?sort=` |
 | GET    | `/tasks/:id`  | Get one task       |
 | POST   | `/tasks`      | Create a task      |
 | PUT    | `/tasks/:id`  | Replace a task     |
@@ -68,4 +68,3 @@ Non-GET requests (POST/PUT/DELETE) can't be sent from the browser's address bar 
 - [`README.md`](README.md) — this file: what the project is and how to run it
 - [`PLAN.md`](PLAN.md) — the rung-by-rung build roadmap
 - [`PROGRESS.md`](PROGRESS.md) — where we are, plus what's owed later
-- [`CLAUDE.md`](CLAUDE.md) — collaboration rules for working with Claude on this project

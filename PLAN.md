@@ -1,6 +1,7 @@
 # PLAN.md — Task/To-Do REST API (Backend Revision Roadmap)
 
-> Working rules for how we collaborate live in **CLAUDE.md**. This file is the *what we build*.
+> This file is the *what we build*. The working rules for how we collaborate are no longer in this
+> repo — they moved to the workspace layer above it.
 
 ## Context
 Revising backend development (JavaScript, Node.js, Express, MongoDB, REST APIs) in a
@@ -16,7 +17,7 @@ Pre-flight checks and version control, before any application code.
 **Pre-flight checklist**
 - Node.js + npm installed (`node --version`, `npm --version`) → if missing, install Node LTS
 - Editor + terminal ready (VS Code assumed)
-- Docs in project → `README.md`, `PLAN.md`, `CLAUDE.md`, `PROGRESS.md`
+- Docs in project → `README.md`, `PLAN.md`, `PROGRESS.md`
 
 **Git setup**
 - Git installed + identity set (`git --version`; `git config --global user.name` and
