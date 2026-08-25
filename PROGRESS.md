@@ -40,18 +40,8 @@ planned here. GraphQL parked in `FUTURE-LEARNING.md` (a separate API paradigm, n
 > detail belongs in its own section, and generic technical facts are re-derivable. Remove once
 > paid. **Test:** if it requires someone to DO something later, it belongs here — not the log.
 
-- **Give auth its `FUTURE-LEARNING.md` entry.** **Due: before task-api closes.** The real content —
-  multi-user auth, `User` model, bcrypt, JWT issue/verify, authn vs authz, resource ownership, *"needs a
-  project that actually has multiple users"* — is a future-project seed sitting only in **this** project's
-  `PLAN.md`, which finishes after Step 7b. `PLAN.md` keeps the one-line record that auth was considered
-  and rejected.
-
-- **Drop "/ next project" from `PLAN.md`'s *Later / optional / next project* heading.** **Due: with the
-  auth move above.** That half of its job belongs to `FUTURE-LEARNING.md`, which did not exist when the
-  section was written — which is exactly why auth landed in the wrong file.
-
-_The three original items — system bloat, the ritual's ordering bug, and portability — were paid by the
-system restructure; the rationale for each moved to the log entry below, per the clearing rule._
+_Empty._ The two auth/`PLAN.md` items were paid on 2026-08-25 (see the log entry below); the three
+before them — system bloat, the ritual's ordering bug, and portability — by the system restructure.
 
 _(The pagination "it's real DB querying, not a light add-on" warning is not listed here — it's baked
 into PLAN's Step 7 split, so it's roadmap, not a loose item.)_
@@ -66,6 +56,19 @@ into PLAN's Step 7 split, so it's roadmap, not a loose item.)_
 
 ### (template) YYYY-MM-DD — Step N
 - **Decisions:** _(what we chose and why — no action items)_
+
+---
+
+### 2026-08-25 — Auth moved out of PLAN (docs PR — not a step)
+- **Why now rather than at close:** both items were due *before task-api closes*, and the close is Step
+  7b's own boundary — the moment the project stops. Paying them there would mean editing the roadmap
+  during the ritual that retires it. Done ahead as their own docs PR, so 7b's PR is pagination alone.
+- **The failure worth remembering: content outlived its file.** Auth's real substance sat in a *project*
+  roadmap that stops being read the day the project ends — the cross-project idea list didn't exist when
+  that section was written, so the only available shelf was the wrong one. `PLAN.md` keeps a one-line
+  "considered and rejected" record, because *that* is a roadmap fact; the topic itself is now in
+  `FUTURE-LEARNING.md`. **Test for next time: would this still be worth reading after this project's last
+  step? If yes, a project file is the wrong home for it.**
 
 ---
 
