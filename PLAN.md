@@ -203,12 +203,11 @@ resolvers still calling Mongoose underneath), parked as a future project — not
 - **Success = `GET /tasks?page=2&limit=10` returns page 2 with correct paging metadata, a capped max
   limit, and stable ordering. task-api is then considered complete.**
 
-### Later / optional / next project
+### Later / optional
 - ~~Pagination, filtering, sorting on `GET /tasks`~~ — **promoted to Step 7** (real DB querying, 7a/7b).
-- **Auth (JWT) — out of scope for task-api.** Deliberately **not** a step: a single-user task toy is the
-  wrong home for real multi-user auth (`User` model, register/login, **bcrypt** hashing, JWT
-  issue/verify, route protection — authn vs authz — and resource ownership). It needs a project that
-  actually has multiple users.
+- **Auth (JWT) — considered and deliberately rejected for task-api.** A single-user task toy is the
+  wrong home for multi-user auth. The topic itself is seeded in the workspace's `FUTURE-LEARNING.md`,
+  which outlives this project.
 - ~~"Blog API" as the next project~~ — **dropped** (user's call). task-api is **complete after Step 7**;
   what follows it is decided separately and is not planned here.
 
