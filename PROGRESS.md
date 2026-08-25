@@ -26,14 +26,41 @@ all 13 GET/POST/PUT/PATCH/DELETE cases against the live DB. Revision notes: `jav
 `find(req.query)`); `completed` compared as text (`=== "true"`/`"false"`, never `Boolean()`); `title` is
 `{ $regex: escapeRegex(t), $options: "i" }` — contains, case-insensitive, **user text escaped to literal**;
 `sort` validated against a module-level `SORTABLE_FIELDS` allowlist with `-` stripped, defaulting to
-`-createdAt`. `typeof x === "string"` guards on `title`/`sort` are load-bearing — they're what stops an
-operator object (`?sort[$ne]=`) reaching `.sort()` and 500ing. Invalid values are **ignored, not 4xx**.
+`-createdAt`. `typeof x === "string"` guards on `title`/`sort` are load-bearing — they stop a **non-string**
+reaching `.sort()`/`$regex` and 500ing. **Corrected 2026-08-25:** the case that actually occurs is a
+**repeated key** (`?sort=a&sort=b` → `["a","b"]` → `.startsWith` throws `TypeError` → 500). It is *not*
+an operator object: this app runs Express 5 with the default `query parser: "simple"`, under which
+`?sort[$ne]=x` parses to the literal key `"sort[$ne]"`, leaving `req.query.sort` `undefined`. Verified
+live. Outcome was always right; the recorded reason was wrong. Invalid values are **ignored, not 4xx**.
 Verified live: 21 cases incl. injection attempts, all correct.
-⏭ **Step 7b next — pagination** (`?page=`/`?limit=`): `skip`/`limit`, defaults **and a max limit**,
-`countDocuments` + a response envelope (a deliberate shape change from the bare array), offset-vs-cursor,
-light indexing. **task-api completes after Step 7.** Auth (JWT) stays **out of scope** — the wrong fit for a single-user toy — and
-the "Blog API next project" idea is **dropped**; what follows task-api is decided separately, not
-planned here. GraphQL parked in `FUTURE-LEARNING.md` (a separate API paradigm, not this step).
+**7b landed:** `GET /tasks` takes `?page=`/`?limit=`. One helper `toPositiveInt(value, fallback)` guards
+both — rejects non-strings first (a **repeated key** arrives as an array), converts with `Number` not
+`parseInt` (`parseInt("10abc")` is `10` and `parseInt("1e3")` is `1` — it accepts junk silently), then
+`!Number.isInteger(n) || n < 1` rejects `NaN`, floats, zero and negatives in a single test. `limit` is
+clamped by `Math.min(..., MAX_LIMIT)`; `page` is **deliberately uncapped** — past the end is an empty
+list, not an error. `DEFAULT_LIMIT = 10`, `MAX_LIMIT = 100`. Rows and `countDocuments(filter)` — **the
+same filter**, or the totals describe a different set — run under `Promise.all`. Sort is
+`` `${sort} -_id` ``: the `_id` tiebreak is what stops pages overlapping, and it is not theoretical —
+`completed` holds two distinct values across the whole collection. Response is an **envelope**
+`{ data, page, limit, total, totalPages, hasNextPage }`, a deliberate breaking change from the bare
+array. Invalid values **ignored, not 4xx** — consistent with 7a. Added `scripts/seed.js` + `npm run seed`
+(scoped `deleteMany({ title: /^Seed task/ })`, so it never touches hand-made tasks). Verified live:
+**30 cases, all passing**, including walking every page under heavy sort ties with no duplicates and
+nothing missed.
+
+🏁 **task-api is COMPLETE.** Step 7b was the last step; there is no Step 8. This file is now a **record,
+not a live state file** — nothing is owed and nothing is in flight. Auth (JWT) was considered and
+rejected (single-user toy is the wrong home); its substance lives in the workspace `FUTURE-LEARNING.md`,
+as does GraphQL. What comes after task-api is decided separately and is not planned here.
+
+**Verified against the live DB 2026-08-25** (not recalled): `.limit(0)` returns the **whole collection**
+— zero means *no limit*, so the `n < 1` guard is what stops `?limit=` (empty → `Number("")` → `0`)
+serving everything. `.skip(-1)` throws `MongoServerError: BSON field 'skip' value must be >= 0` —
+unrecognised by the error handler, so `?page=0` would 500. **Correction:** `.skip(1.5)` does **not**
+error — the driver accepts it. `Number.isInteger` is therefore about refusing to silently reinterpret
+the request, *not* crash-avoidance. Also confirmed: Express 5 default `query parser: "simple"` means
+`?x[$ne]=` yields the literal key `"x[$ne]"`, so the `typeof === "string"` guards defend against
+**repeated keys** (arrays), not operator objects.
 
 ## Action list (owed later)
 > Each item: what's owed + **when it's due**. Keep terse — full teaching
@@ -58,6 +85,39 @@ into PLAN's Step 7 split, so it's roadmap, not a loose item.)_
 - **Decisions:** _(what we chose and why — no action items)_
 
 ---
+
+### 2026-08-25 — Step 7b (final step)
+- **Decisions:** **Invalid paging values are ignored and defaulted, not 4xx** — chosen for *consistency*,
+  not forgiveness: `?completed=banana` and `?sort=nonsense` were already ignored, so 400-ing on `?page=`
+  would make strictness depend on which param you got wrong. Recorded counter-argument: silent correction
+  hides client bugs (an off-by-one sending `?page=0` looks like it works). Switch to rejecting for a
+  public/versioned API — but then for *every* param, not just the newest. **`-_id` tiebreak appended
+  regardless of sort direction** — determinism is the requirement, not matching direction; matching would
+  add branching for no behavioural gain. **`page` deliberately uncapped** — past the end is an empty list,
+  which is a correct answer, not an error. **Seeder in `scripts/`, not `utils/`** — `utils/` holds code
+  the app *imports*; nothing imports a seeder, a human runs it and it exits. Same sort-by-what-it-is call
+  that put `AppError` in `utils/` rather than `middleware/`. **`hasNextPage` over `hasNext`** — user's
+  rename during typing, and the better name. **No indexes added** — concept only; choosing them means
+  `explain()` against real query patterns, and guessing from the code would be cargo cult.
+- **Process — the teaching order failed again, but was caught in one message instead of six.** Beat 2
+  bundled `NaN`, `Number`/`parseInt` and array-valued params into a single beat *while using all three as
+  if already known*. Two things failed to land in one beat, so it was re-derived into four smaller beats
+  rather than reworded. Same root cause as 7a — a topic list treated as a lesson plan — but the structural
+  signal was acted on immediately this time.
+- **Three corrections from the user, and they are not the same kind.** *No cross-stack references* and
+  *all concepts before any code* are *rule defects* — `teach` actively permits the first and is silent on
+  the second — so both went to `SYSTEM-BACKLOG.md`. *Plainer, shorter language* is a rule that already
+  exists and I simply didn't follow; deliberately **no** rule change, since rewording a rule that was
+  ignored grows the file without improving it.
+- **Verifying beat recall, twice.** Checking Express's actual query parsing found **this file's own 7a
+  entry was wrong** — the `typeof === "string"` guards defend against repeated keys (arrays), not operator
+  objects, because Express 5 defaults to `query parser: "simple"`. And checking the driver caught a claim
+  *I* had taught minutes earlier: `.skip(1.5)` does not throw. Both are now recorded above as verified.
+- **Closing the project consisted of:** confirming the action list was empty, moving the one thing that
+  would have died with `PLAN.md` (auth) out to the workspace beforehand, flipping the status lines in
+  `PROGRESS.md`/`README.md`, and nothing else. No archiving — the repo is the archive. Recorded here
+  deliberately, so the *next* project close has a precedent to generalise from rather than a guess; the
+  backlog item for a real close ritual stays open on purpose.
 
 ### 2026-08-25 — Auth moved out of PLAN (docs PR — not a step)
 - **Why now rather than at close:** both items were due *before task-api closes*, and the close is Step

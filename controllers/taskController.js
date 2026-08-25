@@ -2,9 +2,18 @@ const asyncHandler = require("../middleware/asyncHandler");
 const Task = require("../models/task");
 const AppError = require("../utils/AppError");
 
+const DEFAULT_LIMIT = 10;
+const MAX_LIMIT = 100;
 const SORTABLE_FIELDS = ["createdAt", "updatedAt", "title", "completed"];
 
 const escapeRegex = (str) => str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+const toPositiveInt = (value, fallback) => {
+    if (typeof value !== "string") return fallback;
+    const n = Number(value);
+    if (!Number.isInteger(n) || n < 1) return fallback;
+    return n;
+};
 
 exports.getAllTasks = asyncHandler(async(req, res) => {
     const filter = {};
@@ -28,8 +37,25 @@ exports.getAllTasks = asyncHandler(async(req, res) => {
         if (SORTABLE_FIELDS.includes(field)) sort = requestedSort;
     }
 
-    const tasks = await Task.find(filter).sort(sort);
-    res.json(tasks);
+    const page = toPositiveInt(req.query.page, 1);
+    const limit = Math.min(toPositiveInt(req.query.limit, DEFAULT_LIMIT), MAX_LIMIT);
+    const skip = (page - 1) * limit;
+
+    const [tasks, total] = await Promise.all([
+        Task.find(filter).sort(`${sort} -_id`).skip(skip).limit(limit),
+        Task.countDocuments(filter)
+    ]);
+
+    const totalPages = Math.ceil(total / limit);
+
+    res.json({
+        data: tasks,
+        page,
+        limit,
+        total,
+        totalPages,
+        hasNextPage: page < totalPages
+    });
 });
 
 exports.getTaskById = asyncHandler(async(req, res) => {

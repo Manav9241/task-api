@@ -12,22 +12,47 @@ well-understood step at a time, rather than shipping a product.
 - **MongoDB** + **Mongoose** — database & modelling (added partway through)
 
 ## Status
-🚧 In progress — a learning project, built step by step.
-See [PLAN.md](PLAN.md) for the roadmap and [PROGRESS.md](PROGRESS.md) for exactly where we are.
+✅ **Complete.** All planned steps are done — this project is finished, not abandoned.
+See [PLAN.md](PLAN.md) for the roadmap that was followed and [PROGRESS.md](PROGRESS.md) for the
+decisions behind it.
 
-## What the API will do
+## What the API does
 Manage a list of tasks over HTTP:
 
 | Method | Endpoint      | Purpose            |
 |--------|---------------|--------------------|
-| GET    | `/tasks`      | List tasks — supports `?completed=`, `?title=`, `?sort=` |
+| GET    | `/tasks`      | List tasks — supports `?completed=`, `?title=`, `?sort=`, `?page=`, `?limit=` |
 | GET    | `/tasks/:id`  | Get one task       |
 | POST   | `/tasks`      | Create a task      |
 | PUT    | `/tasks/:id`  | Replace a task     |
 | PATCH  | `/tasks/:id`  | Update part of a task |
 | DELETE | `/tasks/:id`  | Delete a task      |
 
-*(Endpoints are added gradually as the project progresses.)*
+### Listing tasks
+
+`GET /tasks` is paginated and returns an **object**, not a bare array:
+
+```json
+{
+  "data": [ { "_id": "...", "title": "Buy milk", "completed": false } ],
+  "page": 1,
+  "limit": 10,
+  "total": 57,
+  "totalPages": 6,
+  "hasNextPage": true
+}
+```
+
+| Param | Meaning | Default |
+|---|---|---|
+| `completed` | `true` / `false` | not filtered |
+| `title` | case-insensitive "contains" search | not filtered |
+| `sort` | `createdAt`, `updatedAt`, `title`, `completed` — prefix `-` for descending | `-createdAt` |
+| `page` | 1-based page number | `1` |
+| `limit` | rows per page, capped at **100** | `10` |
+
+Unrecognised or invalid values are **ignored and replaced with the default** rather than returning 400.
+A `page` past the end returns an empty `data` array, which is a valid response and not an error.
 
 ## Getting started
 
@@ -44,7 +69,14 @@ npm run dev
 
 # or run it plainly
 npm start
+
+# optional: fill the database with sample tasks to page through
+npm run seed          # 15 tasks
+npm run seed -- 40    # or however many
 ```
+
+`npm run seed` only removes and recreates tasks titled `Seed task NN`, so it will not touch
+tasks you created yourself.
 
 `MONGODB_URI` is **required** — the server connects to MongoDB on startup and exits if it
 can't (it won't serve requests without a database). Get the connection string from your
@@ -67,4 +99,4 @@ Non-GET requests (POST/PUT/DELETE) can't be sent from the browser's address bar 
 ## Project files
 - [`README.md`](README.md) — this file: what the project is and how to run it
 - [`PLAN.md`](PLAN.md) — the step-by-step build roadmap
-- [`PROGRESS.md`](PROGRESS.md) — where we are, plus what's owed later
+- [`PROGRESS.md`](PROGRESS.md) — the decision record: what was chosen at each step and why
