@@ -12,9 +12,9 @@ well-understood step at a time, rather than shipping a product.
 - **MongoDB** + **Mongoose** — database & modelling (added partway through)
 
 ## Status
-✅ **Complete.** All planned steps are done — this project is finished, not abandoned.
-See [PLAN.md](PLAN.md) for the roadmap that was followed and [PROGRESS.md](PROGRESS.md) for the
-decisions behind it.
+🔵 **Phase 2 in progress** — making the API container-ready, with Docker as a feature of the project.
+Phase 1 (the API itself, Steps 0–7) is complete. See [PLAN.md](PLAN.md) for both phases and
+[PROGRESS.md](PROGRESS.md) for the decisions behind phase 1.
 
 ## What the API does
 Manage a list of tasks over HTTP:

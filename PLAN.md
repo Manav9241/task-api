@@ -201,15 +201,93 @@ resolvers still calling Mongoose underneath), parked as a future project — not
 - **Concepts — indexing (light):** why the sorted/filtered fields want an index once data grows
   (concept only; ties to the aggregation/indexing future-project idea).
 - **Success = `GET /tasks?page=2&limit=10` returns page 2 with correct paging metadata, a capped max
-  limit, and stable ordering. task-api is then considered complete.**
+  limit, and stable ordering. Phase 1 is then complete.**
 
 ### Later / optional
 - ~~Pagination, filtering, sorting on `GET /tasks`~~ — **promoted to Step 7** (real DB querying, 7a/7b).
 - **Auth (JWT) — considered and deliberately rejected for task-api.** A single-user task toy is the
   wrong home for multi-user auth. The topic itself is seeded in the workspace's `FUTURE-LEARNING.md`,
   which outlives this project.
-- ~~"Blog API" as the next project~~ — **dropped** (user's call). task-api is **complete after Step 7**;
-  what follows it is decided separately and is not planned here.
+- ~~"Blog API" as the next project~~ — **dropped** (user's call). Phase 1 ended after Step 7; phase 2
+  follows below.
+
+## Phase 2 — a container-ready application
+
+**What it is.** task-api is reopened to take it to the next level, with Docker as a real feature of the
+project:
+
+- anyone who clones the repo can run one command and get a working API with a local database and sample
+  data
+- the same image runs against **Atlas** with production-like settings, and against a local MongoDB for
+  development
+- the application gains what running in containers expects of it, even where that means changing its
+  code
+
+**How it is worked.** Implementation-focused: each step builds something real, and the explanation of
+what is being built and why comes with it — it should never feel like following a manual. How a step
+runs day to day is decided once phase 2 has started. Anything handed over to run is tested first.
+
+**Baseline.** *Known — revision:* everything phase 1 built · the Docker project's steps 1–24 (images,
+multi-stage builds, environment variables, networking, healthchecks, restart policies, Compose with
+several services, `depends_on` conditions) — the established terms are in that project's
+`../../Docker/PROGRESS.md` coverage. *First contact:* health endpoints · connection retry · graceful
+shutdown · per-environment configuration · Docker for everyday local development.
+
+**Link to the Docker project.** Phase 2 is that project's step 25. Its work, branches and PRs live here.
+
+Each step states where the project is before it, why the step is needed, and what is better after it.
+
+### Step 8 — Configuration from the environment
+- **Now:** the port is hardcoded to 3000, and nothing checks that `MONGODB_URI` is set until the
+  connection fails.
+- **Why:** every later step runs the app somewhere else — an image, Compose, two environments — and
+  each needs to hand the app its settings from outside.
+- **After:** one config module read at startup · `PORT` and `MONGODB_URI` from the environment, port
+  defaulted · the app refuses to start with a clear message when a required value is missing ·
+  `NODE_ENV` · env example files in git, real values never.
+
+### Step 9 — Production image, and graceful shutdown
+- **Now:** the API only runs where Node is installed and set up by hand, and when stopped it simply dies
+  mid-request with the database connection left open.
+- **Why:** an image is how the app runs identically anywhere, and platforms stop containers with
+  SIGTERM and expect the app to finish cleanly.
+- **After:** `Dockerfile` and `.dockerignore` in task-api · cached dependency install ·
+  production-only dependencies · non-root user · running against Atlas with configuration passed in ·
+  on `docker stop` the app catches SIGTERM, lets in-flight requests finish, and closes the database
+  connection.
+
+### Step 10 — Development environment with Compose, and connection retry
+- **Now:** developing needs Node installed locally and an Atlas connection, and the app exits for good if
+  the database isn't reachable at the moment it starts.
+- **Why:** a developer should get a working setup with one command and see their edits live, and an app
+  that dies whenever the database is a few seconds late can't be run reliably.
+- **After:** `compose.yaml` with the API and a local MongoDB · a development stage with live reload from
+  bind-mounted source · the `node_modules` problem a bind mount causes, and its fix · seeding the local
+  database · the startup crash while the database is still starting, fixed by retrying the connection in
+  the application.
+
+### Step 11 — Health endpoints
+- **Now:** the only check available is `GET /`, which says "Server is running" even when the database is
+  down.
+- **Why:** anything running the app — Docker's healthcheck now, Kubernetes next — needs to know whether
+  it is alive and whether it can actually serve requests.
+- **After:** liveness and readiness endpoints, readiness reporting the database connection · the app
+  listening before the database is connected, so a slow start isn't mistaken for a dead process · the
+  image's healthcheck using it.
+
+### Step 12 — Environments side by side
+- **Now:** development and production-like settings live in scattered commands and files, with nothing
+  showing a newcomer how to run either.
+- **Why:** real projects keep one base setup with a small difference per environment, and keep secrets
+  out of the repository.
+- **After:** a base Compose file plus development and production-like files · combining them and
+  reading the result with `docker compose config` · secrets kept out of git · a README section a new
+  developer can follow from a clean clone.
+
+### Not in phase 2
+Deployment, CI, pushing the image to a registry, Kubernetes (later subjects, per the workspace's
+`FUTURE-LEARNING.md`) · API versioning (no step changes the API contract) · automated tests, auth,
+TypeScript.
 
 ## Tech choices (minimal on purpose)
 - Node.js + Express; `mongoose` + `dotenv` installed Step 5a; `dotenv` used 5a, Mongoose 5b+
@@ -227,7 +305,7 @@ resolvers still calling Mongoose underneath), parked as a future project — not
 - **Step 5c+:** create a task, restart the server, GET it back — proves it persists in the DB.
 
 ## Deliberately NOT doing yet
-- No auth, frontend, deployment, Docker, or test framework
+- No auth, frontend, deployment, or test framework (Docker is phase 2)
 - No folder structure until Step 6 (one file is fine and less scary early)
 - No moving forward until the current step feels boring
 - **No migration tooling / multi-app schema governance** (`migrate-mongo`, versioned migration
