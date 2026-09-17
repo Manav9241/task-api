@@ -14,7 +14,7 @@ well-understood step at a time, rather than shipping a product.
 ## Status
 🔵 **Phase 2 in progress** — making the API container-ready, with Docker as a feature of the project.
 Phase 1 (the API itself, Steps 0–7) is complete. See [PLAN.md](PLAN.md) for both phases and
-[PROGRESS.md](PROGRESS.md) for the decisions behind phase 1.
+[PROGRESS.md](PROGRESS.md) for where the work stands.
 
 ## What the API does
 Manage a list of tasks over HTTP:
@@ -79,7 +79,9 @@ npm run seed -- 40    # or however many
 tasks you created yourself.
 
 `MONGODB_URI` is **required** — the server connects to MongoDB on startup and exits if it
-can't (it won't serve requests without a database). Get the connection string from your
+can't (it won't serve requests without a database). `PORT` (default `3000`) and `NODE_ENV` (default
+`development`) are optional. The app refuses to start, with a message naming the problem, if
+`MONGODB_URI` is missing or `PORT` is not a valid port. Get the connection string from your
 MongoDB Atlas cluster (**Connect → Drivers**).
 
 Then open http://localhost:3000 in your browser.
@@ -96,7 +98,11 @@ Non-GET requests (POST/PUT/DELETE) can't be sent from the browser's address bar 
   that resolves SRV correctly — **v24.11.1 LTS is verified working**. No code/`.env` change is
   needed once the Node version is right. (Root-caused in a Codex session.)
 
+- **Startup hangs with no `MongoDB connected` line** — your current IP address is probably not on the
+  Atlas allowlist (it changes when your network does). Add it under **Network Access** in Atlas.
+
 ## Project files
 - [`README.md`](README.md) — this file: what the project is and how to run it
 - [`PLAN.md`](PLAN.md) — the step-by-step build roadmap
-- [`PROGRESS.md`](PROGRESS.md) — the decision record: what was chosen at each step and why
+- [`PROGRESS.md`](PROGRESS.md) — current state and what each step established; phase 1's decision log is
+  kept at the bottom

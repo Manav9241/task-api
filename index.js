@@ -1,4 +1,4 @@
-require("dotenv").config();
+const config = require("./config");
 const express = require("express");
 const mongoose = require("mongoose");
 
@@ -6,7 +6,6 @@ const taskRoutes = require("./routes/taskRoutes");
 const errorHandler = require("./middleware/errorHandler");
 
 const app = express();
-const PORT = 3000;
 
 app.use(express.json());
 
@@ -20,7 +19,7 @@ app.use(errorHandler);
 
 async function connectDB() {
     try {
-        await mongoose.connect(process.env.MONGODB_URI);
+        await mongoose.connect(config.mongodbUri);
         console.log("MongoDB connected");
     } catch (err) {
         console.error("MongoDB connection failed: ", err.message);
@@ -31,8 +30,8 @@ async function connectDB() {
 async function start() {
     await connectDB();
     
-    app.listen(PORT, () => {
-        console.log(`Server is running on http://localhost:${PORT}`);
+    app.listen(config.port, () => {
+        console.log(`Server is running on http://localhost:${config.port} (${config.nodeEnv})`);
     });
 }
 

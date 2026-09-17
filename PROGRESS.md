@@ -1,13 +1,62 @@
 # PROGRESS.md — Where we are
 
-> Roadmap lives in **PLAN.md**. This file is the **current state**, in three parts:
-> - **Status** — where we are right now. Read first, every session.
-> - **Action list** — what's owed, each with a due step or trigger.
->   **Terse** — detail is re-derivable. Consumed at step start.
-> - **Session log** — history/reference only; drives nothing. Never put an action item here —
->   anything that needs doing goes in the list above.
+> Roadmap lives in **PLAN.md**. This file is the **current state**, in five parts:
+> - **Status** — where phase 2 is right now. Read first, every session.
+> - **Build list** — what the open step builds, in order, ticked as done. Written at step start, doubles as the
+>   resume note, deleted at the step's close.
+> - **Action list** — what's owed, each with a due step or trigger. Terse. Consumed at step start.
+> - **Coverage** — what each phase 2 step established: terms, behaviours seen with real output, delta from
+>   PLAN. Docker-side items tagged **[Docker]** — Docker's step 25 coverage is compiled from them.
+> - **Phase 1 record** — frozen. Not edited.
+>
+> **Phase 2 has no session log.** The reasons behind a decision go in the commit message and PR.
 
 ## Status
+✅ **Phase 1 (steps 0–7b) closed 2026-08-25.**
+🔵 **Phase 2 reopened 2026-09-16.** Working process agreed (project `CLAUDE.md` item 8).
+✅ **Step 8 — configuration from the environment — done**, closed 2026-09-17 on branch `step-8_config`.
+Next: **step 9 — production image, and graceful shutdown**.
+
+## Build list
+_No step open._
+
+## Action list (owed later)
+- **Measure the disk peak of the `node` and `mongo` images** — `docker system df` before cleanup, figures
+  kept. Docker's `PLAN.md` disk budget (3 GB cap) says step 25 is its largest peak and is unmeasured. —
+  **Due: step 9** (`node`), **step 10** (`mongo`)
+- **`PLAN.md` phase 2 still says the step process is "decided once phase 2 has started"** — move the step
+  order (heading + brief → concepts → one part per response) out of `CLAUDE.md` item 8 into `PLAN.md`.
+  Roadmap edit, so via `plan-project` on a `system/` branch. — **Trigger:** before step 9 opens
+
+## Coverage — phase 2
+
+### Step 8 — configuration from the environment
+- **Terms usable without re-teaching:** configuration (a value that changes with *where* the app runs,
+  code unchanged) · environment variable (named text value handed to a process by whatever starts it) ·
+  `process.env` (every value a string; unset → `undefined`, no error) · config module (`config.js` is the
+  only file touching `process.env`/`dotenv`; everything else `require`s it) · default vs required setting ·
+  fail fast (check at startup, collect every error, `console.error` + `process.exit(1)` before connecting) ·
+  `NODE_ENV` (a convention, not a Node feature) · `.env.example`.
+- **Code now:** `PORT` unset → 3000; set → must be an integer 1–65535 (`0` rejected: `listen(0)` picks a
+  random port — stated, not observed). `MONGODB_URI` missing or empty → error. `NODE_ENV` defaults to
+  `development`, not validated, shown in the startup log line. The exported values are the checked ones.
+- **Seen first-hand:** `$env:PORT = "abc"` → `Invalid configuration:` + the PORT line, no connection
+  attempt, `nodemon` waits for a change · run from the parent folder (`node task-api\index.js`) → both
+  errors at once · `$env:PORT = "4000"` → listens on 4000 · `$env:` lasts until the window closes,
+  `Remove-Item Env:PORT` clears it · `dotenv` 17 prints `◇ injected env (1) from .env // tip: ...` at
+  startup · IP missing from the Atlas allowlist → startup hangs with no `MongoDB connected` line.
+- **[Docker]** `dotenv` never overwrites a variable already set (its README), so `-e`/Compose
+  `environment:` beat `.env` · `dotenv` reads `.env` from the **working directory** (`process.cwd()`), which
+  in an image is `WORKDIR` · `NODE_ENV=production` makes `npm install` skip `devDependencies` (taught, not
+  yet observed — step 9 sees it).
+- **Delta from PLAN:** one `.env.example`, not several files · no `.gitignore` change for `.env.*` ·
+  `NODE_ENV` read and defaulted but not checked against allowed values.
+
+---
+
+# Phase 1 record (frozen)
+
+## Status at phase 1 close
 ✅ **Steps 0–4, 5a, 5b, 5c, 6a, 6b, 7a done.** Atlas M0 cluster;
 connection string in a git-ignored `.env`; `mongoose` + `dotenv` installed. All six routes run on
 **Mongoose** (`find`/`findById`/`create`/`findByIdAndUpdate`/`findByIdAndDelete`); `id`→`_id`
@@ -48,10 +97,7 @@ array. Invalid values **ignored, not 4xx** — consistent with 7a. Added `script
 **30 cases, all passing**, including walking every page under heavy sort ties with no duplicates and
 nothing missed.
 
-🏁 **task-api is COMPLETE.** Step 7b was the last step; there is no Step 8. This file is now a **record,
-not a live state file** — nothing is owed and nothing is in flight. Auth (JWT) was considered and
-rejected (single-user toy is the wrong home); its substance lives in the workspace `FUTURE-LEARNING.md`,
-as does GraphQL. What comes after task-api is decided separately and is not planned here.
+🏁 **Phase 1 closed 2026-08-25** after step 7b.
 
 **Verified against the live DB 2026-08-25** (not recalled): `.limit(0)` returns the **whole collection**
 — zero means *no limit*, so the `n < 1` guard is what stops `?limit=` (empty → `Number("")` → `0`)
@@ -61,19 +107,6 @@ error — the driver accepts it. `Number.isInteger` is therefore about refusing 
 the request, *not* crash-avoidance. Also confirmed: Express 5 default `query parser: "simple"` means
 `?x[$ne]=` yields the literal key `"x[$ne]"`, so the `typeof === "string"` guards defend against
 **repeated keys** (arrays), not operator objects.
-
-## Action list (owed later)
-> Each item: what's owed + **when it's due**. Keep terse — full teaching
-> detail belongs in its own section, and generic technical facts are re-derivable. Remove once
-> paid. **Test:** if it requires someone to DO something later, it belongs here — not the log.
-
-_Empty._ The two auth/`PLAN.md` items were paid on 2026-08-25 (see the log entry below); the three
-before them — system bloat, the ritual's ordering bug, and portability — by the system restructure.
-
-_(The pagination "it's real DB querying, not a light add-on" warning is not listed here — it's baked
-into PLAN's Step 7 split, so it's roadmap, not a loose item.)_
-
----
 
 ## Session log
 > **History/reference only — no action items** (those go in the *Action list* above).
