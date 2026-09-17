@@ -15,20 +15,54 @@
 ✅ **Phase 1 (steps 0–7b) closed 2026-08-25.**
 🔵 **Phase 2 reopened 2026-09-16.** Working process agreed (project `CLAUDE.md` item 8).
 ✅ **Step 8 — configuration from the environment — done**, closed 2026-09-17 on branch `step-8_config`.
-Next: **step 9 — production image, and graceful shutdown**.
+✅ **Step 9 — production image, and graceful shutdown — done**, closed 2026-09-17 on branch
+`step-9_production-image`. Next: **step 10 — development environment with Compose, and connection retry**.
 
 ## Build list
 _No step open._
 
 ## Action list (owed later)
-- **Measure the disk peak of the `node` and `mongo` images** — `docker system df` before cleanup, figures
-  kept. Docker's `PLAN.md` disk budget (3 GB cap) says step 25 is its largest peak and is unmeasured. —
-  **Due: step 9** (`node`), **step 10** (`mongo`)
+- **Measure the disk peak with the `mongo` image present** — `docker system df` **before** anything is
+  removed, figures kept. Docker's `PLAN.md` disk budget (3 GB cap) says step 25 is its largest peak; the
+  `node` half is in step 9's coverage, but only partly (images were already gone when measured). —
+  **Due: step 10**
 - **`PLAN.md` phase 2 still says the step process is "decided once phase 2 has started"** — move the step
   order (heading + brief → concepts → one part per response) out of `CLAUDE.md` item 8 into `PLAN.md`.
-  Roadmap edit, so via `plan-project` on a `system/` branch. — **Trigger:** before step 9 opens
+  Roadmap edit, so via `plan-project` on a `system/` branch. — **Due: step 12 close** (re-dued from
+  "before step 9": `CLAUDE.md` item 8 already carries the order and loads every session, so the stale
+  `PLAN.md` sentence blocks nothing, and a separate branch and PR now would interrupt the steps)
 
 ## Coverage — phase 2
+
+### Step 9 — production image, and graceful shutdown
+- **Terms usable without re-teaching:** pinned base tag (`node:24.11.1-alpine` — a tag like `node:24-alpine`
+  moves) · `npm ci` vs `npm install` · `--omit=dev` · dependency files copied and installed before
+  `COPY . .` so code edits reuse the install layer · `.dockerignore` keeping out `node_modules`, `.env`,
+  `.git` · non-root `USER node` — what root lets an attacker do (rewrite code, install tools, root after an
+  escape), what it does not protect (the app's own env vars) · PID 1 ignores a signal it has no handler
+  for · `CMD ["node", "index.js"]`, not `npm start` · `process.on("SIGTERM", fn)` registers, Node calls it
+  later · `server.close(cb)` returns immediately; `cb` runs when the last connection closes · callback style
+  vs `await` · `server.closeAllConnections()` · shutdown deadline (`SHUTDOWN_TIMEOUT_MS = 5000`) shorter
+  than Docker's wait (`docker run --stop-timeout 10`) · exit `0` = exited itself, `137` = SIGKILLed; SIGKILL
+  comes from still running at the deadline, not from the exit code.
+- **Code now:** `Dockerfile` (single stage) + `.dockerignore`; image runs with `(production)` in the startup
+  line. SIGTERM handler registered after `listen`: `server.close` → close Mongoose → `process.exit(0)`, with
+  a 5 s timer that calls `closeAllConnections()`.
+- **Seen first-hand:** rebuild after an `index.js`-only change → `[2/5]`–`[4/5]` `CACHED` · `docker logs` →
+  `injected env (0) from .env` (no `.env` in the image; `--env-file` set the variables) · `whoami` → `node`,
+  no `nodemon` in `node_modules`, no `.env`/`.git` in `/app` · handler without a deadline, browser page
+  opened → logs stop at `SIGTERM received, shutting down`, exit **137** (a connection opened but never
+  used blocks `server.close`) · with the deadline → exit **0** · building `-t task_api` and running
+  `task-api` ran the old image — check the name matches on both commands.
+- **[Docker]** `node:24.11.1-alpine` **226 MB**; the `task-api` image **257 MB** (~31 MB of dependencies and
+  code over the base, base layers shared between images). Build cache and a true peak were not captured —
+  images were already removed when measured. This machine's default `docker stop` wait is **3 s** between
+  SIGTERM and SIGKILL (Docker's docs say 10; cause not found), so the wait is always set explicitly. Alpine's
+  resolver handles Atlas's `mongodb+srv://` lookup. `npm ci` prints a vulnerabilities summary and an npm
+  update notice; neither fails the build.
+- **Delta from PLAN:** added the shutdown deadline and `--stop-timeout` — PLAN's "lets in-flight requests
+  finish" is not achievable without them · no multi-stage build (the app has no build step) · base image
+  kept after cleanup, since step 10 builds on it.
 
 ### Step 8 — configuration from the environment
 - **Terms usable without re-teaching:** configuration (a value that changes with *where* the app runs,
