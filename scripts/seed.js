@@ -1,11 +1,11 @@
-require("dotenv").config();
+const config = require("../config");
 const mongoose = require("mongoose");
 const Task = require("../models/task");
 
 const COUNT = Number(process.argv[2]) || 15;
 
 const run = async () => {
-    await mongoose.connect(process.env.MONGODB_URI);
+    await mongoose.connect(config.mongodbUri);
 
     const removed = await Task.deleteMany({ title: /^Seed task/ });
     console.log(`removed ${removed.deletedCount} existing seed task(s)`);
