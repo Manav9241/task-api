@@ -7,6 +7,8 @@ const errorHandler = require("./middleware/errorHandler");
 
 const app = express();
 
+const SHUTDOWN_TIMEOUT_MS = 5000;
+
 app.use(express.json());
 
 app.get("/", (req, res) => {
@@ -30,8 +32,23 @@ async function connectDB() {
 async function start() {
     await connectDB();
     
-    app.listen(config.port, () => {
+    const server = app.listen(config.port, () => {
         console.log(`Server is running on http://localhost:${config.port} (${config.nodeEnv})`);
+    });
+
+    process.on("SIGTERM", () => {
+        console.log("SIGTERM received, shutting down");
+
+        server.close(async () => {
+            await mongoose.connection.close();
+            console.log("Server and database connection closed");
+            process.exit(0);
+        });
+
+        setTimeout(() => {
+            console.log("Closing connections still open");
+            server.closeAllConnections();
+        }, SHUTDOWN_TIMEOUT_MS);
     });
 }
 

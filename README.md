@@ -86,6 +86,18 @@ MongoDB Atlas cluster (**Connect → Drivers**).
 
 Then open http://localhost:3000 in your browser.
 
+### Run with Docker
+
+```bash
+docker build -t task-api .
+docker run -d --name task-api --stop-timeout 10 -p 3000:3000 --env-file .env task-api
+```
+
+The image runs Node 24.11.1 as a non-root user with production dependencies only; `.env` is passed in at
+run time and never copied into the image. On `docker stop` the app finishes open requests (up to 5
+seconds), closes the database connection and exits with code 0. `--stop-timeout 10` makes Docker wait
+longer than that before force-killing it.
+
 Non-GET requests (POST/PUT/DELETE) can't be sent from the browser's address bar — use
 [Thunder Client](https://marketplace.visualstudio.com/items?itemName=rangav.vscode-thunder-client)
 (VS Code extension) or `curl`.
