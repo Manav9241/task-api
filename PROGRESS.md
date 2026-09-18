@@ -28,12 +28,8 @@ health endpoints, and two environments side by side.
 _No step open._
 
 ## Action list (owed later)
-- **`PLAN.md` phase 2 still says the step process is "decided once phase 2 has started"** — move the step
-  order (heading + brief → concepts → one part per response) out of `CLAUDE.md` item 8 into `PLAN.md`.
-  Roadmap edit, so via `plan-project` on a `system/` branch. — **Trigger: a phase 3 opens.** Re-dued at
-  step 12's close and recommended for deletion instead: phase 2 has no steps left to run from `PLAN.md`,
-  `CLAUDE.md` item 8 carries the order and loads every session, and the sentence it would fix describes a
-  decision already taken. Awaiting the user's call.
+_Empty._ Nothing is owed: phase 2 is complete and every item raised during it was paid at the close of
+the step that raised it.
 
 ## Coverage — phase 2
 
