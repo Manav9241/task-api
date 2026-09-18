@@ -1,39 +1,75 @@
 # Task API
 
-A simple **Task / To-Do REST API** built with Node.js, Express, and MongoDB.
+A **Task / To-Do REST API** built with Node.js, Express and MongoDB, packaged to run in containers:
+one command gives you the API, a local database and sample data.
 
-This is a **learning / revision project** — the goal is to rebuild backend fundamentals
-(routing, CRUD, Mongoose, validation, error handling) by building the API one small,
-well-understood step at a time, rather than shipping a product.
+This is a **learning / revision project**. It was built one small, well-understood step at a time — first
+the API itself (routing, CRUD, Mongoose, validation, error handling), then everything running it in
+containers expects of an application. [PLAN.md](PLAN.md) is the roadmap and [PROGRESS.md](PROGRESS.md)
+records what each step established, including the decisions and why they went the way they did.
+
+🏁 **Both phases are complete.** Phase 1 built the API (steps 0–7). Phase 2 made it container-ready
+(steps 8–12): configuration from the environment, a production image with graceful shutdown, a Compose
+development environment with connection retry, health endpoints, and two environments side by side.
+
+---
+
+## Quick start
+
+With Docker installed, from this folder:
+
+```bash
+docker compose up -d --build
+```
+
+Open <http://localhost:3000/tasks>. No Node install and no database account are needed; the details of
+this environment, and of the production-like one, are under [Running it](#running-it).
 
 ## Tech stack
-- **Node.js** — JavaScript runtime
-- **Express** — web framework / routing
-- **MongoDB** + **Mongoose** — database & modelling (added partway through)
 
-## Status
-🏁 **Phase 2 complete** — the API is container-ready: a production image, a one-command development
-environment with Compose, health endpoints, and development and production-like environments side by
-side. Phase 1 (the API itself, Steps 0–7) is complete too. See [PLAN.md](PLAN.md) for both phases and
-[PROGRESS.md](PROGRESS.md) for what each step established.
+| Piece | Role | Notes |
+|---|---|---|
+| **Node.js** | runtime | pinned to **v24.11.1** — v24.18.0 breaks Atlas lookups, see [Troubleshooting](#troubleshooting) |
+| **Express 5** | routing and middleware | CommonJS (`require`), not ESM |
+| **MongoDB + Mongoose** | database and modelling | a local MongoDB in development, **Atlas** for production-like |
+| **Docker + Compose** | how it runs | a two-stage image and three Compose files |
+| **nodemon** | restart on file change | development only |
 
-## What the API does
-Manage a list of tasks over HTTP:
+No TypeScript and no test framework: requests are tried by hand, with the browser for GETs and
+[Thunder Client](https://marketplace.visualstudio.com/items?itemName=rangav.vscode-thunder-client) or
+`curl` for everything else, since a browser's address bar can only send GET.
 
-| Method | Endpoint      | Purpose            |
-|--------|---------------|--------------------|
-| GET    | `/tasks`      | List tasks — supports `?completed=`, `?title=`, `?sort=`, `?page=`, `?limit=` |
-| GET    | `/tasks/:id`  | Get one task       |
-| POST   | `/tasks`      | Create a task      |
-| PUT    | `/tasks/:id`  | Replace a task     |
-| PATCH  | `/tasks/:id`  | Update part of a task |
-| DELETE | `/tasks/:id`  | Delete a task      |
-| GET    | `/healthz`    | Liveness — `200` whenever the process is running |
-| GET    | `/readyz`     | Readiness — `200` when the database is connected, `503` when it is not |
+---
 
-The server starts listening **before** the database is connected and keeps retrying in the background,
-so `/readyz` is what says whether it can serve. Both the image (`HEALTHCHECK`) and `compose.yaml` check
-`/readyz`, so `docker compose ps` reports the API as `(healthy)` or `(unhealthy)`.
+## The API
+
+| Method | Endpoint | Purpose |
+|---|---|---|
+| GET | `/` | plain text `Server is running` |
+| GET | `/tasks` | list tasks — filtering, sorting and pagination, below |
+| GET | `/tasks/:id` | one task |
+| POST | `/tasks` | create a task |
+| PUT | `/tasks/:id` | replace a task |
+| PATCH | `/tasks/:id` | update part of a task |
+| DELETE | `/tasks/:id` | delete a task |
+| GET | `/healthz` | liveness — `200` whenever the process is running |
+| GET | `/readyz` | readiness — `200` when the database is connected, `503` when it is not |
+
+### A task
+
+```json
+{
+  "_id": "6aab7af6dddc2dd4fb730ae0",
+  "title": "Buy milk",
+  "completed": false,
+  "createdAt": "2026-09-17T05:30:00.000Z",
+  "updatedAt": "2026-09-17T05:30:00.000Z"
+}
+```
+
+`title` is required, trimmed, and at most 200 characters. `completed` defaults to `false`. `_id` is
+MongoDB's; `createdAt` and `updatedAt` are maintained by Mongoose. Write routes read **only** `title` and
+`completed` from the request body, so anything else a client sends is ignored rather than stored.
 
 ### Listing tasks
 
@@ -58,12 +94,55 @@ so `/readyz` is what says whether it can serve. Both the image (`HEALTHCHECK`) a
 | `page` | 1-based page number | `1` |
 | `limit` | rows per page, capped at **100** | `10` |
 
-Unrecognised or invalid values are **ignored and replaced with the default** rather than returning 400.
-A `page` past the end returns an empty `data` array, which is a valid response and not an error.
+Unrecognised or invalid values are **ignored and replaced with the default** rather than returning 400,
+and a `page` past the end returns an empty `data` array, which is a valid response and not an error.
 
-## Running it: two environments
+### Errors
 
-Three Compose files describe them:
+Every route sends its errors to one handler, which answers:
+
+| Status | When |
+|---|---|
+| `400` | a malformed id, or a task that fails validation (missing `title`, or one over 200 characters) |
+| `404` | no task with that id |
+| `500` | anything unexpected — logged in full on the server, never returned to the client |
+
+---
+
+## Configuration
+
+Settings come from the environment, and `config.js` is the only file that reads them:
+
+| Variable | Required | Default | Notes |
+|---|---|---|---|
+| `MONGODB_URI` | **yes** | — | `mongodb://…` for a local database, `mongodb+srv://…` for Atlas (**Connect → Drivers**) |
+| `PORT` | no | `3000` | must be a whole number from 1 to 65535 |
+| `NODE_ENV` | no | `development` | appears in the startup line; the image sets `production` |
+
+**The app refuses to start** when `MONGODB_URI` is missing or `PORT` is invalid: it lists every problem it
+found and exits before attempting a connection.
+
+Where the values come from:
+
+| Environment | Source |
+|---|---|
+| Development (Compose) | `compose.override.yaml` — a local database, so no `.env` is needed |
+| Production-like (Compose) | `.env.production`, read by Compose's `env_file` |
+| Without Docker | `.env`, read by `dotenv` |
+
+`dotenv` never overwrites a variable that is already set, so a value passed in by Docker always beats a
+`.env` file sitting in the folder — which is why development never reaches Atlas by accident.
+
+**Secrets stay out of git.** `.gitignore` covers `.env*`, with an exception for `.env*.example`, so `.env`
+and `.env.production` are ignored while `.env.example` and `.env.production.example` are tracked as the
+shape to copy. `docker compose config` prints the resolved connection string, password included, so treat
+its output as a secret too.
+
+---
+
+## Running it
+
+Three Compose files describe two environments:
 
 | File | Holds |
 |---|---|
@@ -72,17 +151,16 @@ Three Compose files describe them:
 | `compose.prod.yaml` | **production-like** — opt-in with `-f`: the `production` image stage, Atlas, no mounts, no seeder |
 
 `docker compose config` prints the merged result of whichever files are in play, and starts nothing.
-Note that it also prints the resolved connection string, password included.
 
-### Development (no Node or Atlas needed)
+### Development
 
 ```bash
 docker compose up -d --build
 ```
 
-That starts three containers: MongoDB, the API on http://localhost:3000, and a one-off `seed` container
-that fills the database with 15 sample tasks and exits (`Exited (0)` is success). Your `task-api` folder
-is shared into the API container, so saving a file restarts the app inside it — no rebuild.
+Three containers start: MongoDB, the API on <http://localhost:3000>, and a one-off `seed` container that
+fills the database with 15 sample tasks and exits — `Exited (0)` is success, not a crash. Your `task-api`
+folder is shared into the API container, so saving a file restarts the app inside it, with no rebuild.
 
 ```bash
 docker compose logs -f api   # follow the API's output
@@ -94,11 +172,7 @@ docker compose down -v       # stop and delete the database too
 After changing dependencies (`npm install <package>`), run `docker compose up --build -V`. `-V` replaces
 the anonymous volume holding `node_modules`, which Compose otherwise reuses with the old packages.
 
-Development never touches Atlas: `compose.override.yaml` sets `MONGODB_URI` to the local database, and
-`dotenv` does not overwrite a variable that is already set, so the `.env` in your folder is ignored
-inside the container.
-
-### Production-like (the real image, against Atlas)
+### Production-like, against Atlas
 
 ```bash
 cp .env.production.example .env.production
@@ -107,12 +181,11 @@ cp .env.production.example .env.production
 docker compose -f compose.yaml -f compose.prod.yaml up -d --build
 ```
 
-The API is on **http://localhost:8080**, so it can run alongside the development one. This environment:
+The API is on <http://localhost:8080>, so it runs alongside the development one. This environment:
 
 - builds the `production` stage: production dependencies only, non-root user, `NODE_ENV=production`
-- takes its settings from `.env.production`, which is git-ignored — `.env.production.example` is the
-  tracked stand-in
-- uses the `HEALTHCHECK` baked into the image, so `docker compose ps` shows `(healthy)`
+- takes its settings from the git-ignored `.env.production`
+- uses the `HEALTHCHECK` baked into the image, so `docker compose ps` reports `(healthy)`
 - restarts unless you stop it (`restart: unless-stopped`)
 - runs under its own Compose project name, `task-api-prod`, so it cannot collide with development
 
@@ -122,7 +195,21 @@ docker compose -f compose.yaml -f compose.prod.yaml logs -f api
 docker compose -f compose.yaml -f compose.prod.yaml down
 ```
 
-## Running it without Docker
+### The production image on its own
+
+The image `compose.prod.yaml` builds also runs by itself:
+
+```bash
+docker build -t task-api .
+docker run -d --name task-api --stop-timeout 10 -p 3000:3000 --env-file .env.production task-api
+```
+
+`--stop-timeout 10` gives Docker a longer wait than the app's own 5-second shutdown deadline, so the app
+always finishes shutting down on its own terms.
+
+### Without Docker
+
+Needs Node v24.11.1 and a MongoDB you can reach, such as Atlas.
 
 ```bash
 # install dependencies
@@ -130,7 +217,7 @@ npm install
 
 # set up environment variables
 cp .env.example .env
-# then edit .env and set MONGODB_URI to your MongoDB connection string
+# then edit .env and set MONGODB_URI to your connection string
 
 # run in development (auto-restarts on file changes)
 npm run dev
@@ -143,47 +230,77 @@ npm run seed          # 15 tasks
 npm run seed -- 40    # or however many
 ```
 
-`npm run seed` only removes and recreates tasks titled `Seed task NN`, so it will not touch
-tasks you created yourself.
+`npm run seed` only removes and recreates tasks titled `Seed task NN`, so it never touches tasks you
+created yourself. Then open <http://localhost:3000>.
 
-`MONGODB_URI` is **required** — the server connects to MongoDB on startup and **retries** until it
-succeeds (1s, 2s, 4s… capped at 30s), logging each failed attempt, rather than serving requests without
-a database. `PORT` (default `3000`) and `NODE_ENV` (default
-`development`) are optional. The app refuses to start, with a message naming the problem, if
-`MONGODB_URI` is missing or `PORT` is not a valid port. Get the connection string from your
-MongoDB Atlas cluster (**Connect → Drivers**).
+---
 
-Then open http://localhost:3000 in your browser.
+## How it starts and stops
 
-### The image on its own
+- **It listens first, then connects.** The port opens immediately, so a database that is slow to arrive
+  is not mistaken for a dead process. `/readyz` is what reports whether the app can actually serve;
+  requests needing the database before it is ready wait about 10 seconds and then fail.
+- **It retries the connection** — 1s, 2s, 4s, doubling up to 30s — logging each failed attempt instead of
+  exiting. After the first success, Mongoose handles any later reconnection itself.
+- **It shuts down gracefully.** On SIGTERM it stops accepting connections, gives requests in progress
+  5 seconds to finish, closes anything still open, closes the database connection, and exits with code 0.
+  Exit code `137` means it was killed instead, which should not happen while Docker's wait is longer.
+- **Health is checked in two places:** the image carries a `HEALTHCHECK`, and `compose.override.yaml`
+  defines one for development. Both call `/readyz`.
 
-The production image is what `compose.prod.yaml` builds, and it also runs by itself:
+## Project structure
 
-```bash
-docker build -t task-api .
-docker run -d --name task-api --stop-timeout 10 -p 3000:3000 --env-file .env task-api
+```
+index.js         composition only: middleware, routes, error handler, start and stop
+config.js        the one place that reads process.env, with validation
+routes/          taskRoutes.js, healthRoutes.js         paths → controller functions
+controllers/     taskController.js, healthController.js request handling
+models/          task.js                                the Mongoose schema and model
+middleware/      asyncHandler.js, errorHandler.js       forwarding async errors; the one error handler
+utils/           AppError.js                            an error type that carries a status code
+scripts/         seed.js                                sample data; run by a human, never imported
+Dockerfile       two stages: dev (nodemon) and production (default)
+compose*.yaml    base, development, production-like
 ```
 
-On `docker stop` the app finishes open requests (up to 5 seconds), closes the database connection and
-exits with code 0. `--stop-timeout 10` makes Docker wait longer than that before force-killing it.
+Validation rules live on the schema, controllers stay thin, and there is no service layer: a two-field
+CRUD app has no logic that would justify one.
 
-Non-GET requests (POST/PUT/DELETE) can't be sent from the browser's address bar — use
-[Thunder Client](https://marketplace.visualstudio.com/items?itemName=rangav.vscode-thunder-client)
-(VS Code extension) or `curl`.
+---
 
 ## Troubleshooting
 
-- **Startup fails with `querySrv ECONNREFUSED ... mongodb.net`** (using a `mongodb+srv://` string) —
-  this is a **Node.js DNS-detection bug on some versions**, *not* an Atlas or code problem: Node
-  **v24.18.0** auto-detects DNS as `127.0.0.1`, breaking SRV lookups. Fix by running a Node version
-  that resolves SRV correctly — **v24.11.1 LTS is verified working**. No code/`.env` change is
-  needed once the Node version is right. (Root-caused in a Codex session.)
+- **Startup fails with `querySrv ECONNREFUSED … mongodb.net`** (with a `mongodb+srv://` string) — a
+  **Node DNS-detection bug in some versions**, not an Atlas or code problem: **v24.18.0** detects DNS as
+  `127.0.0.1` and breaks SRV lookups. Run **v24.11.1**, which is verified working; no code or `.env`
+  change is needed. (Root-caused in a Codex session.)
 
-- **Startup hangs with no `MongoDB connected` line** — your current IP address is probably not on the
-  Atlas allowlist (it changes when your network does). Add it under **Network Access** in Atlas.
+- **Startup hangs with no `MongoDB connected` line** — your current IP is probably missing from the Atlas
+  allowlist, which changes whenever your network does. Add it under **Network Access** in Atlas.
+
+- **A container is `unhealthy` while its own logs look fine** — the reason is in the check's output, not
+  the container's log:
+
+  ```bash
+  docker inspect -f '{{json .State.Health}}' task-api-api-1
+  ```
+
+- **`Cannot find module '<package>'` after installing it** — the container is still using the old
+  `node_modules` volume. Rebuild with `docker compose up --build -V`.
+
+- **A change to the `production` stage seems to have no effect in development** — Compose only builds the
+  stage named by `target`, so the `production` stage is never built by `docker compose up`. Check what the
+  image actually carries:
+
+  ```bash
+  docker image inspect -f '{{json .Config.Healthcheck}}' task-api
+  ```
+
+---
 
 ## Project files
+
 - [`README.md`](README.md) — this file: what the project is and how to run it
-- [`PLAN.md`](PLAN.md) — the step-by-step build roadmap
+- [`PLAN.md`](PLAN.md) — the step-by-step roadmap for both phases
 - [`PROGRESS.md`](PROGRESS.md) — current state and what each step established; phase 1's decision log is
   kept at the bottom
