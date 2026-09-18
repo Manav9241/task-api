@@ -18,7 +18,9 @@
 ✅ **Step 9 — production image, and graceful shutdown — done**, closed 2026-09-17 on branch
 `step-9_production-image`.
 ✅ **Step 10 — development environment with Compose, and connection retry — done**, closed 2026-09-18 on
-branch `step-10_compose-dev`. Next: **step 11 — health endpoints**.
+branch `step-10_compose-dev`.
+✅ **Step 11 — health endpoints — done**, closed 2026-09-18 on branch `step-11_health-endpoints`.
+Next: **step 12 — environments side by side** (the last step of phase 2).
 
 ## Build list
 _No step open._
@@ -31,6 +33,39 @@ _No step open._
   `PLAN.md` sentence blocks nothing, and a separate branch and PR now would interrupt the steps)
 
 ## Coverage — phase 2
+
+### Step 11 — health endpoints
+- **Terms usable without re-teaching:** liveness ("is the process alive?" → restart if not) vs readiness
+  ("can it serve?" → stop sending traffic, don't restart) · why liveness must not check the database (a
+  database outage would restart every instance and stampede it on recovery) · `/healthz` and `/readyz`
+  (the `z` avoids clashing with real resources) · `mongoose.connection.readyState` (0 disconnected,
+  1 connected, 2 connecting, 3 disconnecting) · `503 Service Unavailable` as "alive but not ready",
+  distinct from 500 · listen-then-connect ordering · a floating promise that is safe because the function
+  never rejects · `HEALTHCHECK` in an image vs `healthcheck:` in Compose · `wget --spider -q … || exit 1`
+  (no `curl` in the Node image) · `${PORT:-3000}` shell default inside a healthcheck command · build-time
+  instructions (`FROM`/`COPY`/`RUN`/`WORKDIR`) vs settings stored in the image config (`CMD`,
+  `HEALTHCHECK`, `ENV`, `USER`), which is why their order relative to each other does not matter.
+- **Code now:** `start()` is not `async`: it listens, registers SIGTERM, then calls `connectDB()`
+  unawaited. `controllers/healthController.js` + `routes/healthRoutes.js`, mounted with
+  `app.use(healthRoutes)` (no prefix), no `asyncHandler` (nothing async). `Dockerfile` production stage
+  carries `HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3`; `compose.yaml`'s `api`
+  has its own with `interval: 10s`, `start_period: 30s`.
+- **Seen first-hand:** with no database, `/` and `/healthz` answer instantly, `/readyz` returns
+  `503 {"status":"not ready","database":"disconnected"}`, and `/tasks` hangs ~10 s then 500s (Mongoose
+  buffers commands, then gives up) · once connected, `200 {"status":"ready","database":"connected"}` ·
+  stopping `mongo` flips `/readyz` back to 503 within ~20 s while `/healthz` stays 200, and Compose shows
+  `api` `Up (unhealthy)` with `wget: server returned error: HTTP/1.1 503` in `State.Health.Log` · the
+  production image's own healthcheck reports `(healthy)` when run on the Compose network with
+  `MONGODB_URI` set.
+- **[Docker]** `docker inspect -f '{{json .State.Health}}' <container>` is the first place to look when a
+  container is unhealthy but its logs look fine — it holds the check command's own output. Two typos were
+  found only that way: `http:localhost:3000` → `wget: bad address`, and `http:/localhost:3000` (one
+  slash) → `wget: bad port ''`. **`--retries=` with no value is accepted silently** and dropped from the
+  image config; `docker image inspect -f '{{json .Config.Healthcheck}}'` is how to confirm what the image
+  actually carries. Disk before cleanup: 7 images 1.567 GB, 11 volumes 297.1 MB, cache 125.2 MB.
+- **Delta from PLAN:** PLAN's "the image's healthcheck using it" is done in **both** places — the image
+  for production, and `compose.yaml` for development, because Compose builds only the `dev` stage and
+  would never see the image's own `HEALTHCHECK`.
 
 ### Step 10 — development environment with Compose, and connection retry
 - **Terms usable without re-teaching:** `compose.yaml` with three services (`mongo`, `api`, `seed`) ·
