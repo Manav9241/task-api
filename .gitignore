@@ -1,8 +1,9 @@
 # Dependencies
 node_modules/
 
-# Environment variables (DB connection strings / secrets — used from Step 5a)
-.env
+# Environment variables (DB connection strings / secrets)
+.env*
+!.env*.example
 
 # OS junk files
 .DS_Store
