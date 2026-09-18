@@ -2,6 +2,7 @@ const config = require("./config");
 const express = require("express");
 const mongoose = require("mongoose");
 
+const healthRoutes = require("./routes/healthRoutes");
 const taskRoutes = require("./routes/taskRoutes");
 const errorHandler = require("./middleware/errorHandler");
 
@@ -16,6 +17,8 @@ app.use(express.json());
 app.get("/", (req, res) => {
     res.send("Server is running");
 });
+
+app.use(healthRoutes);
 
 app.use("/tasks", taskRoutes);
 
@@ -45,27 +48,27 @@ async function connectDB() {
     }
 }
 
-async function start() {
-    await connectDB();
-    
+function start() {
     const server = app.listen(config.port, () => {
         console.log(`Server is running on http://localhost:${config.port} (${config.nodeEnv})`);
     });
-
+    
     process.on("SIGTERM", () => {
         console.log("SIGTERM received, shutting down");
-
+        
         server.close(async () => {
             await mongoose.connection.close();
             console.log("Server and database connection closed");
             process.exit(0);
         });
-
+        
         setTimeout(() => {
             console.log("Closing connections still open");
             server.closeAllConnections();
         }, SHUTDOWN_TIMEOUT_MS);
     });
+    
+    connectDB();
 }
 
 start();

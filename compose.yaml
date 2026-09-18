@@ -23,6 +23,12 @@ services:
       - /app/node_modules
     depends_on:
       - mongo
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:3000/readyz"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 30s
     stop_grace_period: 10s
 
   seed:

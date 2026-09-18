@@ -27,4 +27,7 @@ ENV NODE_ENV=production
 
 USER node
 
+HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
+    CMD wget --spider -q http://localhost:${PORT:-3000}/readyz || exit 1
+
 CMD [ "node", "index.js" ]

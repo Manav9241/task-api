@@ -27,6 +27,12 @@ Manage a list of tasks over HTTP:
 | PUT    | `/tasks/:id`  | Replace a task     |
 | PATCH  | `/tasks/:id`  | Update part of a task |
 | DELETE | `/tasks/:id`  | Delete a task      |
+| GET    | `/healthz`    | Liveness — `200` whenever the process is running |
+| GET    | `/readyz`     | Readiness — `200` when the database is connected, `503` when it is not |
+
+The server starts listening **before** the database is connected and keeps retrying in the background,
+so `/readyz` is what says whether it can serve. Both the image (`HEALTHCHECK`) and `compose.yaml` check
+`/readyz`, so `docker compose ps` reports the API as `(healthy)` or `(unhealthy)`.
 
 ### Listing tasks
 
