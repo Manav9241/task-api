@@ -20,7 +20,9 @@
 ✅ **Step 10 — development environment with Compose, and connection retry — done**, closed 2026-09-18 on
 branch `step-10_compose-dev`.
 ✅ **Step 11 — health endpoints — done**, closed 2026-09-18 on branch `step-11_health-endpoints`.
-Next: **step 12 — environments side by side** (the last step of phase 2).
+✅ **Step 12 — environments side by side — done**, closed 2026-09-18 on branch `step-12_environments`.
+🏁 **Phase 2 complete.** task-api is container-ready: production image, Compose development environment,
+health endpoints, and two environments side by side.
 
 ## Build list
 _No step open._
@@ -28,11 +30,44 @@ _No step open._
 ## Action list (owed later)
 - **`PLAN.md` phase 2 still says the step process is "decided once phase 2 has started"** — move the step
   order (heading + brief → concepts → one part per response) out of `CLAUDE.md` item 8 into `PLAN.md`.
-  Roadmap edit, so via `plan-project` on a `system/` branch. — **Due: step 12 close** (re-dued from
-  "before step 9": `CLAUDE.md` item 8 already carries the order and loads every session, so the stale
-  `PLAN.md` sentence blocks nothing, and a separate branch and PR now would interrupt the steps)
+  Roadmap edit, so via `plan-project` on a `system/` branch. — **Trigger: a phase 3 opens.** Re-dued at
+  step 12's close and recommended for deletion instead: phase 2 has no steps left to run from `PLAN.md`,
+  `CLAUDE.md` item 8 carries the order and loads every session, and the sentence it would fix describes a
+  decision already taken. Awaiting the user's call.
 
 ## Coverage — phase 2
+
+### Step 12 — environments side by side
+- **Terms usable without re-teaching:** Compose loads `compose.yaml` **plus `compose.override.yaml`
+  automatically**; `-f a -f b` uses exactly those files (the override is then **not** loaded) and later
+  files win · merge rules — single values replaced (`image`, `target`, `restart`), maps merged key by key
+  (`environment`), **lists appended, not replaced** (`ports`, `volumes`), so a port in the base is
+  published in *every* environment · a later file can add or change but never remove, therefore the base
+  holds only what every environment shares · `docker compose config` prints the merged result and starts
+  nothing · the Compose **project name** comes from the folder and can be set with top-level `name:`,
+  which is what keeps two environments from colliding · `env_file:` (read on the host, passed into the
+  container) vs `environment:` (committed, so never secrets) vs the `.env` next to `compose.yaml` (used
+  for `${VAR}` substitution *inside* the Compose file) · `.gitignore` pattern `.env*` + `!.env*.example`.
+- **Files now:** `compose.yaml` = `build.context` + `stop_grace_period: 10s` only ·
+  `compose.override.yaml` = development (dev stage, `mongo`, `seed`, bind mounts, port 3000, local
+  `MONGODB_URI`, its own healthcheck) · `compose.prod.yaml` = `name: task-api-prod`, production stage,
+  port **8080**, `env_file: .env.production`, `restart: unless-stopped`, and **no healthcheck** so the
+  image's own `HEALTHCHECK` applies. `.env.production` is git-ignored; `.env.production.example` tracked.
+- **Seen first-hand:** the merged config after the split was **byte-identical** to the single-file version
+  · production-like runs as `task-api-prod-api-1`, `Up (healthy)` from the image's healthcheck, on
+  `0.0.0.0:8080->3000/tcp`, logging `(production)` and serving the **Atlas** data while development serves
+  the local seeded data · `docker compose config` prints the resolved `MONGODB_URI` **including the
+  password**, so its output is as sensitive as the env file · `restart: unless_stopped` (underscore) is
+  accepted by Compose and rejected by the daemon at container-create time:
+  `invalid restart policy: unknown policy`.
+- **[Docker]** Peak before final cleanup: 7 images 1.567 GB, 4 volumes 244.1 MB, cache 124.9 MB. After:
+  `mongo:8.0` + `node:24.11.1-alpine` (1.5 GB) and `task-api_mongo-data` (217.5 MB) kept; everything this
+  phase built removed. **Phase 2 total peak stayed near 2 GB against Docker's `PLAN.md` 3 GB cap**, with
+  `mongo:8.0` (1.27 GB) the dominant item — that is the figure Docker's step 25 entry needs.
+- **Delta from PLAN:** PLAN's "a base Compose file plus development and production-like files" is done with
+  the base kept **deliberately thin** (two settings), because list-shaped options merge by appending ·
+  production-like points at Atlas rather than a second local database, which is what made the secrets
+  handling real.
 
 ### Step 11 — health endpoints
 - **Terms usable without re-teaching:** liveness ("is the process alive?" → restart if not) vs readiness

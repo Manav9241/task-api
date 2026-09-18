@@ -12,9 +12,10 @@ well-understood step at a time, rather than shipping a product.
 - **MongoDB** + **Mongoose** — database & modelling (added partway through)
 
 ## Status
-🔵 **Phase 2 in progress** — making the API container-ready, with Docker as a feature of the project.
-Phase 1 (the API itself, Steps 0–7) is complete. See [PLAN.md](PLAN.md) for both phases and
-[PROGRESS.md](PROGRESS.md) for where the work stands.
+🏁 **Phase 2 complete** — the API is container-ready: a production image, a one-command development
+environment with Compose, health endpoints, and development and production-like environments side by
+side. Phase 1 (the API itself, Steps 0–7) is complete too. See [PLAN.md](PLAN.md) for both phases and
+[PROGRESS.md](PROGRESS.md) for what each step established.
 
 ## What the API does
 Manage a list of tasks over HTTP:
@@ -60,7 +61,20 @@ so `/readyz` is what says whether it can serve. Both the image (`HEALTHCHECK`) a
 Unrecognised or invalid values are **ignored and replaced with the default** rather than returning 400.
 A `page` past the end returns an empty `data` array, which is a valid response and not an error.
 
-## Getting started with Docker (no Node or Atlas needed)
+## Running it: two environments
+
+Three Compose files describe them:
+
+| File | Holds |
+|---|---|
+| `compose.yaml` | what both environments share: the build context and the 10s stop grace period |
+| `compose.override.yaml` | **development** — loaded automatically: the `dev` image stage, a local MongoDB, your source folder mounted in, and the seeder |
+| `compose.prod.yaml` | **production-like** — opt-in with `-f`: the `production` image stage, Atlas, no mounts, no seeder |
+
+`docker compose config` prints the merged result of whichever files are in play, and starts nothing.
+Note that it also prints the resolved connection string, password included.
+
+### Development (no Node or Atlas needed)
 
 ```bash
 docker compose up -d --build
@@ -80,10 +94,35 @@ docker compose down -v       # stop and delete the database too
 After changing dependencies (`npm install <package>`), run `docker compose up --build -V`. `-V` replaces
 the anonymous volume holding `node_modules`, which Compose otherwise reuses with the old packages.
 
-Development uses a local MongoDB, never Atlas: `compose.yaml` sets `MONGODB_URI`, and `dotenv` does not
-overwrite a variable that is already set, so the `.env` in your folder is ignored inside the container.
+Development never touches Atlas: `compose.override.yaml` sets `MONGODB_URI` to the local database, and
+`dotenv` does not overwrite a variable that is already set, so the `.env` in your folder is ignored
+inside the container.
 
-## Getting started without Docker
+### Production-like (the real image, against Atlas)
+
+```bash
+cp .env.production.example .env.production
+# then edit .env.production and set MONGODB_URI to your Atlas connection string
+
+docker compose -f compose.yaml -f compose.prod.yaml up -d --build
+```
+
+The API is on **http://localhost:8080**, so it can run alongside the development one. This environment:
+
+- builds the `production` stage: production dependencies only, non-root user, `NODE_ENV=production`
+- takes its settings from `.env.production`, which is git-ignored — `.env.production.example` is the
+  tracked stand-in
+- uses the `HEALTHCHECK` baked into the image, so `docker compose ps` shows `(healthy)`
+- restarts unless you stop it (`restart: unless-stopped`)
+- runs under its own Compose project name, `task-api-prod`, so it cannot collide with development
+
+```bash
+docker compose -f compose.yaml -f compose.prod.yaml ps
+docker compose -f compose.yaml -f compose.prod.yaml logs -f api
+docker compose -f compose.yaml -f compose.prod.yaml down
+```
+
+## Running it without Docker
 
 ```bash
 # install dependencies
@@ -116,17 +155,17 @@ MongoDB Atlas cluster (**Connect → Drivers**).
 
 Then open http://localhost:3000 in your browser.
 
-### Run with Docker
+### The image on its own
+
+The production image is what `compose.prod.yaml` builds, and it also runs by itself:
 
 ```bash
 docker build -t task-api .
 docker run -d --name task-api --stop-timeout 10 -p 3000:3000 --env-file .env task-api
 ```
 
-The image runs Node 24.11.1 as a non-root user with production dependencies only; `.env` is passed in at
-run time and never copied into the image. On `docker stop` the app finishes open requests (up to 5
-seconds), closes the database connection and exits with code 0. `--stop-timeout 10` makes Docker wait
-longer than that before force-killing it.
+On `docker stop` the app finishes open requests (up to 5 seconds), closes the database connection and
+exits with code 0. `--stop-timeout 10` makes Docker wait longer than that before force-killing it.
 
 Non-GET requests (POST/PUT/DELETE) can't be sent from the browser's address bar — use
 [Thunder Client](https://marketplace.visualstudio.com/items?itemName=rangav.vscode-thunder-client)
