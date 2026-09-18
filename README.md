@@ -54,7 +54,30 @@ Manage a list of tasks over HTTP:
 Unrecognised or invalid values are **ignored and replaced with the default** rather than returning 400.
 A `page` past the end returns an empty `data` array, which is a valid response and not an error.
 
-## Getting started
+## Getting started with Docker (no Node or Atlas needed)
+
+```bash
+docker compose up -d --build
+```
+
+That starts three containers: MongoDB, the API on http://localhost:3000, and a one-off `seed` container
+that fills the database with 15 sample tasks and exits (`Exited (0)` is success). Your `task-api` folder
+is shared into the API container, so saving a file restarts the app inside it — no rebuild.
+
+```bash
+docker compose logs -f api   # follow the API's output
+docker compose ps -a         # all three containers, including the finished seeder
+docker compose down          # stop; the database volume is kept
+docker compose down -v       # stop and delete the database too
+```
+
+After changing dependencies (`npm install <package>`), run `docker compose up --build -V`. `-V` replaces
+the anonymous volume holding `node_modules`, which Compose otherwise reuses with the old packages.
+
+Development uses a local MongoDB, never Atlas: `compose.yaml` sets `MONGODB_URI`, and `dotenv` does not
+overwrite a variable that is already set, so the `.env` in your folder is ignored inside the container.
+
+## Getting started without Docker
 
 ```bash
 # install dependencies
@@ -78,8 +101,9 @@ npm run seed -- 40    # or however many
 `npm run seed` only removes and recreates tasks titled `Seed task NN`, so it will not touch
 tasks you created yourself.
 
-`MONGODB_URI` is **required** — the server connects to MongoDB on startup and exits if it
-can't (it won't serve requests without a database). `PORT` (default `3000`) and `NODE_ENV` (default
+`MONGODB_URI` is **required** — the server connects to MongoDB on startup and **retries** until it
+succeeds (1s, 2s, 4s… capped at 30s), logging each failed attempt, rather than serving requests without
+a database. `PORT` (default `3000`) and `NODE_ENV` (default
 `development`) are optional. The app refuses to start, with a message naming the problem, if
 `MONGODB_URI` is missing or `PORT` is not a valid port. Get the connection string from your
 MongoDB Atlas cluster (**Connect → Drivers**).

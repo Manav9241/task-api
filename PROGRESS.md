@@ -16,16 +16,14 @@
 🔵 **Phase 2 reopened 2026-09-16.** Working process agreed (project `CLAUDE.md` item 8).
 ✅ **Step 8 — configuration from the environment — done**, closed 2026-09-17 on branch `step-8_config`.
 ✅ **Step 9 — production image, and graceful shutdown — done**, closed 2026-09-17 on branch
-`step-9_production-image`. Next: **step 10 — development environment with Compose, and connection retry**.
+`step-9_production-image`.
+✅ **Step 10 — development environment with Compose, and connection retry — done**, closed 2026-09-18 on
+branch `step-10_compose-dev`. Next: **step 11 — health endpoints**.
 
 ## Build list
 _No step open._
 
 ## Action list (owed later)
-- **Measure the disk peak with the `mongo` image present** — `docker system df` **before** anything is
-  removed, figures kept. Docker's `PLAN.md` disk budget (3 GB cap) says step 25 is its largest peak; the
-  `node` half is in step 9's coverage, but only partly (images were already gone when measured). —
-  **Due: step 10**
 - **`PLAN.md` phase 2 still says the step process is "decided once phase 2 has started"** — move the step
   order (heading + brief → concepts → one part per response) out of `CLAUDE.md` item 8 into `PLAN.md`.
   Roadmap edit, so via `plan-project` on a `system/` branch. — **Due: step 12 close** (re-dued from
@@ -33,6 +31,44 @@ _No step open._
   `PLAN.md` sentence blocks nothing, and a separate branch and PR now would interrupt the steps)
 
 ## Coverage — phase 2
+
+### Step 10 — development environment with Compose, and connection retry
+- **Terms usable without re-teaching:** `compose.yaml` with three services (`mongo`, `api`, `seed`) ·
+  `mongodb://mongo:27017/taskdb` (plain scheme for a fixed host; `+srv` is Atlas's DNS lookup) · named
+  volume at `/data/db` · `build: {context, target}` picking a stage · two-stage `Dockerfile` with
+  `production` **last**, so a plain `docker build` is unchanged · bind mount `.:/app` · anonymous volume
+  `/app/node_modules` — a *new* volume is filled from the image, Compose *reuses* it on recreate, so
+  changed dependencies need `docker compose up --build -V` · `nodemon --legacy-watch` (an edit in a
+  Windows folder produces no file-change notification inside the container, so polling is required) ·
+  `CMD ["node_modules/.bin/nodemon", ...]` (no `npm` in front) · `healthcheck` with
+  `test`/`interval`/`timeout`/`retries`/`start_period` · `depends_on: condition: service_healthy` vs the
+  plain list form (start order only) · a one-off service (`command:` + `restart: "no"`, `Exited (0)` is
+  success) · `docker compose up --no-deps <service>` · `docker compose ps -a` · retry loop with
+  exponential backoff · `serverSelectionTimeoutMS` · `wait(ms)` = a promise resolved by `setTimeout`.
+- **Code now:** `Dockerfile` stages `dev` (all dependencies, `nodemon -L`, `NODE_ENV=development`) and
+  `production`. `compose.yaml`: `mongo` + healthcheck, `api` (target `dev`, both mounts, plain
+  `depends_on`), `seed` (`node scripts/seed.js`, waits for `service_healthy`). `connectDB` retries
+  forever — 1s, 2s, 4s… capped at 30s — with `serverSelectionTimeoutMS: 5000` so each attempt fails fast.
+- **Seen first-hand:** `db.admin.Command` (a typo for `adminCommand`) → mongo `unhealthy` after the start
+  period plus five failed checks, and `dependency failed to start` for `seed`; `docker inspect -f
+  '{{json .State.Health}}' <container>` shows the failing command's output, while `docker logs` on mongo
+  looks entirely normal · a misspelled `/app/node_modeules` mount **still worked**, because the bind mount
+  supplied the Windows `node_modules` — and Docker created the misspelled empty folder in the project ·
+  saving a file → `[nodemon] restarting due to changes...` without a rebuild · data survived
+  `down` + `up` on the named volume · `--no-deps api` with no database → `MongoDB connection failed
+  (attempt 1): getaddrinfo ENOTFOUND mongo`, retries at 1s/2s/4s/8s, then `MongoDB connected` once mongo
+  started · in development `docker compose stop api` ends with exit **143** and no
+  `Server and database connection closed`: PID 1 is `nodemon`, which forwards SIGTERM and exits at once,
+  cutting the app's shutdown short. Accepted in development; the production stage still runs `node`.
+- **[Docker]** Peak before cleanup: images **1.536 GB** (`mongo:8.0` 1.27 GB · `task-api-api` and
+  `task-api-seed` 262 MB each, sharing the Node base · `node:24.11.1-alpine` 226 MB), **20** local volumes
+  **336.5 MB** (19 of them anonymous `/data/configdb`, one per `up`), build cache **126.1 MB**. Total
+  ≈2.0 GB, inside Docker's `PLAN.md` 3 GB cap. After cleanup: both base images kept for steps 11–12
+  (1.5 GB) plus `task-api_mongo-data` (217 MB); built images, anonymous volumes and cache removed.
+- **Delta from PLAN:** PLAN says the app "exits for good if the database isn't reachable at the moment it
+  starts" — in fact Mongoose waits 30 s first, so the retry loop matters for outages longer than that;
+  we shortened that wait to 5 s to keep retries responsive · seeding is a Compose service that runs on
+  every `up`, not a manual command · development shutdown is deliberately not graceful.
 
 ### Step 9 — production image, and graceful shutdown
 - **Terms usable without re-teaching:** pinned base tag (`node:24.11.1-alpine` — a tag like `node:24-alpine`
